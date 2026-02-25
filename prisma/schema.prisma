@@ -14,6 +14,62 @@ model User {
   name      String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  subCalendars   SubCalendar[]
+  calendarEvents CalendarEvent[]
+}
+
+model SubCalendar {
+  id           String    @id @default(cuid())
+  userId       String
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name         String
+  color        String
+  isVisible    Boolean   @default(true)
+  sortOrder    Int       @default(0)
+  icalUrl      String?
+  lastSyncedAt DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  events CalendarEvent[]
+
+  @@unique([userId, name])
+  @@index([userId])
+}
+
+model CalendarEvent {
+  id              String    @id @default(cuid())
+  userId          String
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subCalendarId   String
+  subCalendar     SubCalendar @relation(fields: [subCalendarId], references: [id], onDelete: Cascade)
+
+  title           String
+  description     String?
+  location        String?
+  startDate       DateTime
+  endDate         DateTime
+  isAllDay        Boolean   @default(false)
+
+  recurrenceRule  String?
+  recurrenceEnd   DateTime?
+
+  parentEventId   String?
+  parentEvent     CalendarEvent?  @relation("RecurrenceExceptions", fields: [parentEventId], references: [id], onDelete: Cascade)
+  exceptions      CalendarEvent[] @relation("RecurrenceExceptions")
+  originalDate    DateTime?
+
+  icalUid           String?
+  isLocallyModified Boolean @default(false)
+  isLocallyDeleted  Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, startDate, endDate])
+  @@index([userId, recurrenceRule])
+  @@index([subCalendarId, icalUid])
 }
 
 model Module {
