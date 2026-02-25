@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -79,75 +79,100 @@ const navItems = [
   },
 ];
 
-export default function Sidebar() {
+interface SidebarProps {
+  mobileOpen?: boolean;
+  onMobileClose?: () => void;
+}
+
+export default function Sidebar({ mobileOpen = false, onMobileClose }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
   const pathname = usePathname();
 
-  return (
-    <aside
-      className={`${
-        collapsed ? "w-[72px]" : "w-[260px]"
-      } h-screen sticky top-0 flex flex-col border-r border-border bg-sidebar-bg backdrop-blur-xl transition-all duration-300 ease-in-out`}
-    >
-      {/* Logo */}
-      <div className="flex items-center gap-3 px-5 h-16 border-b border-border">
-        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center flex-shrink-0">
-          <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z" />
-          </svg>
-        </div>
-        {!collapsed && (
-          <span className="text-sm font-semibold tracking-tight text-foreground/90 animate-slide-in">
-            MyLifeSystem
-          </span>
-        )}
-      </div>
+  // Close mobile sidebar on route change
+  useEffect(() => {
+    onMobileClose?.();
+  }, [pathname]); // eslint-disable-line react-hooks/exhaustive-deps
 
-      {/* Navigation */}
-      <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-        {navItems.map((item) => {
-          const isActive = pathname === item.href;
-          return (
-            <Link
-              key={item.name}
-              href={item.href}
-              className={`group flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
-                isActive
-                  ? "bg-accent/10 text-accent shadow-[inset_0_0_0_1px_var(--accent-glow)]"
-                  : "text-muted-foreground hover:text-foreground hover:bg-overlay"
-              }`}
-            >
-              <span
-                className={`flex-shrink-0 transition-colors duration-200 ${
-                  isActive ? "text-accent" : "text-muted group-hover:text-foreground/70"
+  // Show labels: always on mobile when open, on desktop when not collapsed
+  const showLabels = mobileOpen || !collapsed;
+
+  return (
+    <>
+      {/* Mobile backdrop */}
+      {mobileOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/50 md:hidden animate-backdrop"
+          onClick={onMobileClose}
+        />
+      )}
+
+      <aside
+        className={`${
+          collapsed ? "md:w-[72px]" : "md:w-[260px]"
+        } w-[260px] h-screen flex-col border-r border-border bg-sidebar-bg backdrop-blur-xl transition-all duration-300 ease-in-out ${
+          mobileOpen ? "flex fixed inset-y-0 left-0 z-50" : "hidden"
+        } md:flex md:sticky md:top-0`}
+      >
+        {/* Logo */}
+        <div className="flex items-center gap-3 px-5 h-16 border-b border-border">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center flex-shrink-0">
+            <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z" />
+            </svg>
+          </div>
+          {showLabels && (
+            <span className="text-sm font-semibold tracking-tight text-foreground/90 animate-slide-in">
+              MyLifeSystem
+            </span>
+          )}
+        </div>
+
+        {/* Navigation */}
+        <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+          {navItems.map((item) => {
+            const isActive = pathname === item.href;
+            return (
+              <Link
+                key={item.name}
+                href={item.href}
+                className={`group flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+                  isActive
+                    ? "bg-accent/10 text-accent shadow-[inset_0_0_0_1px_var(--accent-glow)]"
+                    : "text-muted-foreground hover:text-foreground hover:bg-overlay"
                 }`}
               >
-                {item.icon}
-              </span>
-              {!collapsed && <span className="animate-slide-in">{item.name}</span>}
-            </Link>
-          );
-        })}
-      </nav>
+                <span
+                  className={`flex-shrink-0 transition-colors duration-200 ${
+                    isActive ? "text-accent" : "text-muted group-hover:text-foreground/70"
+                  }`}
+                >
+                  {item.icon}
+                </span>
+                {showLabels && <span className="animate-slide-in">{item.name}</span>}
+              </Link>
+            );
+          })}
+        </nav>
 
-      {/* Collapse toggle */}
-      <div className="px-3 py-3 border-t border-border">
-        <button
-          onClick={() => setCollapsed(!collapsed)}
-          className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-muted hover:text-foreground/70 hover:bg-overlay transition-all duration-200 text-sm"
-        >
-          <svg
-            className={`w-4 h-4 transition-transform duration-300 ${collapsed ? "rotate-180" : ""}`}
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={1.5}
-            stroke="currentColor"
+        {/* Collapse toggle - desktop only */}
+        <div className="px-3 py-3 border-t border-border hidden md:block">
+          <button
+            onClick={() => setCollapsed(!collapsed)}
+            className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-muted hover:text-foreground/70 hover:bg-overlay transition-all duration-200 text-sm"
           >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M18.75 19.5l-7.5-7.5 7.5-7.5m-6 15L5.25 12l7.5-7.5" />
-          </svg>
-          {!collapsed && <span className="animate-slide-in">Collapse</span>}
-        </button>
-      </div>
-    </aside>
+            <svg
+              className={`w-4 h-4 transition-transform duration-300 ${collapsed ? "rotate-180" : ""}`}
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M18.75 19.5l-7.5-7.5 7.5-7.5m-6 15L5.25 12l7.5-7.5" />
+            </svg>
+            {!collapsed && <span className="animate-slide-in">Collapse</span>}
+          </button>
+        </div>
+      </aside>
+    </>
   );
 }

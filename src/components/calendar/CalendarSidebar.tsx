@@ -13,6 +13,8 @@ interface CalendarSidebarProps {
   onSyncCalendar: (id: string) => void;
   onExportCalendar: (id: string) => void;
   syncingIds: Set<string>;
+  mobileOpen?: boolean;
+  onMobileClose?: () => void;
 }
 
 export default function CalendarSidebar({
@@ -25,12 +27,22 @@ export default function CalendarSidebar({
   onSyncCalendar,
   onExportCalendar,
   syncingIds,
+  mobileOpen = false,
+  onMobileClose,
 }: CalendarSidebarProps) {
   const ownCalendars = subCalendars.filter((c) => !c.icalUrl);
   const linkedCalendars = subCalendars.filter((c) => c.icalUrl);
 
   return (
-    <div className="w-[240px] shrink-0 border-r border-border bg-card/30 p-4 flex flex-col gap-4 overflow-y-auto">
+    <>
+      {/* Mobile backdrop */}
+      {mobileOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/50 md:hidden animate-backdrop"
+          onClick={onMobileClose}
+        />
+      )}
+      <div className={`w-[240px] shrink-0 border-r border-border bg-card/30 p-4 flex-col gap-4 overflow-y-auto ${mobileOpen ? "flex fixed inset-y-0 left-0 z-50" : "hidden"} md:flex md:relative`}>
       {/* Own calendars */}
       <div>
         <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
@@ -93,6 +105,7 @@ export default function CalendarSidebar({
         Koppel iCal URL
       </button>
     </div>
+    </>
   );
 }
 

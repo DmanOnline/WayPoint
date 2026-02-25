@@ -90,16 +90,16 @@ const modules = [
 
 export default function Dashboard() {
   return (
-    <div className="p-8 max-w-7xl mx-auto space-y-8">
+    <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-6 md:space-y-8">
       {/* Hero Section */}
       <div className="animate-fade-in">
-        <h2 className="text-3xl font-bold tracking-tight text-foreground">
+        <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">
           Your{" "}
           <span className="animate-gradient bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-transparent">
             Life System
           </span>
         </h2>
-        <p className="text-muted-foreground mt-2 text-lg">
+        <p className="text-muted-foreground mt-1 md:mt-2 text-base md:text-lg">
           Everything you need to run your life, all in one place.
         </p>
       </div>

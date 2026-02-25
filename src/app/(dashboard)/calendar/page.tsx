@@ -30,6 +30,7 @@ export default function CalendarPage() {
   const [syncingIds, setSyncingIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [zoomLevel, setZoomLevel] = useState(40);
+  const [calSidebarOpen, setCalSidebarOpen] = useState(false);
 
   const [modalState, setModalState] = useState<ModalState>({
     open: false,
@@ -473,23 +474,28 @@ export default function CalendarPage() {
       <CalendarSidebar
         subCalendars={subCalendars}
         onToggleVisibility={handleToggleVisibility}
-        onNewCalendar={() =>
-          setSubCalModalState({ open: true, mode: "create" })
-        }
-        onLinkIcal={() =>
-          setSubCalModalState({ open: true, mode: "link" })
-        }
-        onEditCalendar={(cal) =>
-          setSubCalModalState({ open: true, mode: "edit", subCalendar: cal })
-        }
+        onNewCalendar={() => {
+          setCalSidebarOpen(false);
+          setSubCalModalState({ open: true, mode: "create" });
+        }}
+        onLinkIcal={() => {
+          setCalSidebarOpen(false);
+          setSubCalModalState({ open: true, mode: "link" });
+        }}
+        onEditCalendar={(cal) => {
+          setCalSidebarOpen(false);
+          setSubCalModalState({ open: true, mode: "edit", subCalendar: cal });
+        }}
         onDeleteCalendar={handleDeleteSubCalendar}
         onSyncCalendar={syncCalendar}
         onExportCalendar={handleExportCalendar}
         syncingIds={syncingIds}
+        mobileOpen={calSidebarOpen}
+        onMobileClose={() => setCalSidebarOpen(false)}
       />
 
       {/* Main calendar area */}
-      <div className="flex-1 flex flex-col p-4 overflow-hidden">
+      <div className="flex-1 flex flex-col p-2 md:p-4 overflow-hidden min-w-0">
         <CalendarHeader
           currentDate={currentDate}
           view={view}
@@ -504,6 +510,7 @@ export default function CalendarPage() {
           }
           zoomLevel={zoomLevel}
           onZoomChange={setZoomLevel}
+          onToggleSidebar={() => setCalSidebarOpen(true)}
         />
 
         {view === "month" ? (

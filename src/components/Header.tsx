@@ -35,7 +35,11 @@ interface User {
   name: string;
 }
 
-export default function Header() {
+interface HeaderProps {
+  onMenuClick?: () => void;
+}
+
+export default function Header({ onMenuClick }: HeaderProps) {
   const [greeting, setGreeting] = useState("");
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
@@ -89,10 +93,21 @@ export default function Header() {
   const initial = displayName.charAt(0).toUpperCase();
 
   return (
-    <header className="relative z-40 h-16 flex items-center justify-between px-8 border-b border-border bg-header-bg backdrop-blur-sm transition-colors duration-300">
-      <div className="flex items-center gap-4">
+    <header className="relative z-40 h-16 flex items-center justify-between px-4 md:px-8 border-b border-border bg-header-bg backdrop-blur-sm transition-colors duration-300">
+      <div className="flex items-center gap-3">
+        {/* Hamburger menu - mobile only */}
+        <button
+          onClick={onMenuClick}
+          className="md:hidden p-2 -ml-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-overlay transition-colors"
+          aria-label="Open menu"
+        >
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+          </svg>
+        </button>
+
         <div>
-          <h1 className="text-lg font-semibold text-foreground/90">
+          <h1 className="text-base md:text-lg font-semibold text-foreground/90">
             {greeting}{" "}
             <span className="animate-gradient bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-transparent">
               {displayName}
@@ -100,7 +115,7 @@ export default function Header() {
           </h1>
         </div>
       </div>
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2 md:gap-4">
         <div className="text-right hidden sm:block">
           <p className="text-sm text-muted-foreground">{date}</p>
           <p className="text-xs text-muted font-mono">{time}</p>
