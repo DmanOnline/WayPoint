@@ -1,4 +1,4 @@
-# myLifeSystem — Visie & Architectuur
+# Waypoint — Visie & Architectuur
 
 > Sessie: 26 februari 2026
 

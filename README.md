@@ -1,4 +1,4 @@
-# myLifeSystem
+# Waypoint
 
 > A life companion that knows you better over time — and helps you become who you want to be.
 
@@ -6,7 +6,7 @@
 
 ## What is this?
 
-Most productivity apps are passive. You put data in, they store it. myLifeSystem is different.
+Most productivity apps are passive. You put data in, they store it. Waypoint is different.
 
 This is a **character development system** — a personal life companion built around one idea: that the most valuable thing software can do for you is not help you do more, but help you *become more*.
 
@@ -16,7 +16,7 @@ The goal is not to track tasks. The goal is that in 5 years, you look back and c
 
 ## The vision
 
-Most life management tools are organized around **doing**. myLifeSystem is organized around **becoming**.
+Most life management tools are organized around **doing**. Waypoint is organized around **becoming**.
 
 The difference: a to-do list asks *"what should I do today?"* This system asks *"who am I becoming through what I do today?"*
 
