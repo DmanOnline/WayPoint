@@ -19,6 +19,8 @@ model User {
   calendarEvents CalendarEvent[]
   projects       Project[]
   tasks          Task[]
+  habitCategories HabitCategory[]
+  habits          Habit[]
 }
 
 model SubCalendar {
@@ -120,6 +122,67 @@ model Task {
   @@index([userId, status])
   @@index([userId, scheduledDate])
   @@index([userId, dueDate])
+}
+
+model HabitCategory {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  color     String
+  icon      String?
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  habits Habit[]
+
+  @@unique([userId, name])
+  @@index([userId])
+}
+
+model Habit {
+  id              String         @id @default(cuid())
+  userId          String
+  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  categoryId      String?
+  category        HabitCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  name            String
+  description     String?
+  color           String         @default("#6366f1")
+  icon            String?
+
+  frequencyType     String         @default("daily")
+  frequencyTarget   Int            @default(1)
+  frequencyPeriod   String         @default("day")
+  frequencyInterval Int            @default(1)
+  frequencyDays     String?
+
+  startDate       DateTime       @default(now())
+  reminderTime    String?
+  isArchived      Boolean        @default(false)
+  sortOrder       Int            @default(0)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  completions HabitCompletion[]
+
+  @@index([userId, isArchived])
+  @@index([userId, categoryId])
+}
+
+model HabitCompletion {
+  id          String   @id @default(cuid())
+  habitId     String
+  habit       Habit    @relation(fields: [habitId], references: [id], onDelete: Cascade)
+  completedAt DateTime
+  count       Int      @default(1)
+  note        String?
+  createdAt   DateTime @default(now())
+
+  @@unique([habitId, completedAt])
+  @@index([habitId, completedAt])
 }
 
 model Module {
