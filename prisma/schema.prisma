@@ -21,6 +21,10 @@ model User {
   tasks          Task[]
   habitCategories HabitCategory[]
   habits          Habit[]
+  noteFolders     NoteFolder[]
+  notes           Note[]
+  goalCategories  GoalCategory[]
+  goals           Goal[]
 }
 
 model SubCalendar {
@@ -183,6 +187,103 @@ model HabitCompletion {
 
   @@unique([habitId, completedAt])
   @@index([habitId, completedAt])
+}
+
+model NoteFolder {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  color     String   @default("#6366f1")
+  icon      String?
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  notes Note[]
+
+  @@unique([userId, name])
+  @@index([userId])
+}
+
+model Note {
+  id         String      @id @default(cuid())
+  userId     String
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  folderId   String?
+  folder     NoteFolder? @relation(fields: [folderId], references: [id], onDelete: SetNull)
+
+  title      String
+  content    String      @default("")
+  color      String      @default("#ffffff")
+  tags       String?
+  isPinned   Boolean     @default(false)
+  isArchived Boolean     @default(false)
+  sortOrder  Int         @default(0)
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+
+  @@index([userId, isArchived])
+  @@index([userId, isPinned])
+  @@index([userId, folderId])
+}
+
+model GoalCategory {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  color     String   @default("#6366f1")
+  icon      String?
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  goals Goal[]
+
+  @@unique([userId, name])
+  @@index([userId])
+}
+
+model Goal {
+  id          String        @id @default(cuid())
+  userId      String
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  categoryId  String?
+  category    GoalCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  title       String
+  description String?
+  status      String        @default("active")
+  priority    String        @default("medium")
+  color          String        @default("#6366f1")
+  manualProgress Int?
+  targetDate     DateTime?
+  completedAt    DateTime?
+  isArchived  Boolean       @default(false)
+  sortOrder   Int           @default(0)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  milestones GoalMilestone[]
+
+  @@index([userId, isArchived])
+  @@index([userId, status])
+  @@index([userId, categoryId])
+}
+
+model GoalMilestone {
+  id          String    @id @default(cuid())
+  goalId      String
+  goal        Goal      @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  title       String
+  isCompleted Boolean   @default(false)
+  completedAt DateTime?
+  sortOrder   Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([goalId])
 }
 
 model Module {

@@ -103,7 +103,7 @@ export default function TasksPage() {
       ).length,
       today: allTasks.filter((t) => {
         if (t.status === "done") return false;
-        if (t.scheduledDate?.substring(0, 10) === todayStr) return true;
+        if (t.scheduledDate && t.scheduledDate.substring(0, 10) <= todayStr) return true;
         if (t.dueDate && t.dueDate.substring(0, 10) <= todayStr) return true;
         return false;
       }).length,
@@ -138,7 +138,7 @@ export default function TasksPage() {
       case "today":
         return allTasks.filter((t) => {
           if (t.status === "done") return false;
-          if (t.scheduledDate?.substring(0, 10) === todayStr) return true;
+          if (t.scheduledDate && t.scheduledDate.substring(0, 10) <= todayStr) return true;
           if (t.dueDate && t.dueDate.substring(0, 10) <= todayStr) return true;
           return false;
         });

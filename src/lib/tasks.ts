@@ -300,13 +300,15 @@ export function getDateLabel(dateStr: string): string {
 export function formatScheduledDate(
   date: string | null,
   time: string | null
-): string {
-  if (!date) return "";
+): { label: string; isOverdue: boolean } {
+  if (!date) return { label: "", isOverdue: false };
   const d = new Date(toDateOnly(date) + "T00:00:00");
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const tomorrow = new Date(today);
   tomorrow.setDate(tomorrow.getDate() + 1);
+
+  const isOverdue = d.getTime() < today.getTime();
 
   let label: string;
   if (d.getTime() === today.getTime()) {
@@ -343,7 +345,7 @@ export function formatScheduledDate(
     label += ` ${time}`;
   }
 
-  return label;
+  return { label, isOverdue };
 }
 
 // Util: format due date met urgentie

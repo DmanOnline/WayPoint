@@ -108,7 +108,7 @@ export default function QuickAddBar({ projects, onAdd }: QuickAddBarProps) {
   const scheduledLabel = formatScheduledDate(
     parsed.scheduledDate || null,
     parsed.scheduledTime || null
-  );
+  ).label;
   const dueInfo = formatDueDate(parsed.dueDate || null);
   const recurrenceLabel = formatRecurrence(
     parsed.recurrenceRule || null,

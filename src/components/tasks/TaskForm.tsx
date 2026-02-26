@@ -377,10 +377,8 @@ function DateTimeSelector({
           <input
             type="date"
             value={formData.scheduledDate}
-            onChange={(e) => {
-              onChange({ scheduledDate: e.target.value });
-              if (e.target.value) setShowDatePicker(false);
-            }}
+            onChange={(e) => onChange({ scheduledDate: e.target.value })}
+            onBlur={() => setShowDatePicker(false)}
             className="w-full px-3 py-2 rounded-lg border border-border bg-card text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-accent/50"
             autoFocus
           />

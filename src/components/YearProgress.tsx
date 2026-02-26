@@ -13,7 +13,7 @@ function getYearData() {
 
   const elapsed =
     (now.getTime() - start.getTime()) / (1000 * 60 * 60 * 24);
-  const daysPassed = Math.floor(elapsed);
+  const daysPassed = Math.floor(elapsed) + 1; // vandaag telt mee
   const daysRemaining = totalDays - daysPassed;
   const percentage = (elapsed / totalDays) * 100;
 
