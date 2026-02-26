@@ -272,7 +272,7 @@ export function getWeekRange(date: Date): { start: Date; end: Date } {
  * Available event colors with labels.
  */
 export const EVENT_COLORS = [
-  { value: "#6366f1", label: "Indigo" },
+  { value: "#6C63FF", label: "Indigo" },
   { value: "#8b5cf6", label: "Paars" },
   { value: "#3b82f6", label: "Blauw" },
   { value: "#06b6d4", label: "Cyan" },

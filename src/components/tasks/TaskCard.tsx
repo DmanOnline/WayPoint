@@ -67,9 +67,9 @@ export default function TaskCard({
         onClick={handleToggle}
         className={`shrink-0 mt-0.5 w-[18px] h-[18px] rounded-full border-2 flex items-center justify-center transition-all duration-200 ${
           isDone
-            ? "border-accent bg-accent"
+            ? "border-positive bg-positive"
             : completing
-            ? "border-green-500 bg-green-500 animate-checkbox-pop animate-success-ring"
+            ? "border-positive bg-positive animate-checkbox-pop animate-success-ring"
             : checkboxStyle
         }`}
       >

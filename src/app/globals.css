@@ -1,43 +1,61 @@
 @import "tailwindcss";
 
-/* Light mode (default) */
+/* ─── Premium Light Mode ─── */
 :root {
   --background: #ffffff;
-  --foreground: #111827;
-  --surface: #f9fafb;
-  --surface-hover: #f3f4f6;
+  --foreground: #191C1F;
+  --surface: #f7f7f8;
+  --surface-hover: #ededef;
   --card: #ffffff;
-  --card-hover: #f9fafb;
-  --border: #e5e7eb;
-  --border-subtle: #f3f4f6;
-  --muted: #6b7280;
-  --muted-foreground: #9ca3af;
-  --accent: #6366f1;
-  --accent-glow: rgba(99, 102, 241, 0.1);
-  --sidebar-bg: rgba(255, 255, 255, 0.8);
-  --header-bg: rgba(255, 255, 255, 0.5);
-  --overlay: rgba(0, 0, 0, 0.04);
-  --shadow-color: rgba(0, 0, 0, 0.08);
+  --card-hover: #fafafa;
+  --border: #e6e6ea;
+  --border-subtle: #f0f0f2;
+  --muted: #6b6b73;
+  --muted-foreground: #9c9ca5;
+  --accent: #6C63FF;
+  --accent-hover: #5B52EE;
+  --accent-glow: rgba(108, 99, 255, 0.12);
+  --sidebar-bg: rgba(255, 255, 255, 0.85);
+  --header-bg: rgba(255, 255, 255, 0.65);
+  --overlay: rgba(0, 0, 0, 0.03);
+  --shadow-color: rgba(0, 0, 0, 0.06);
+  --positive: #00C48C;
+  --negative: #FF4757;
+  --warning: #FFAB00;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.03);
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.06), 0 4px 12px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.08), 0 16px 48px rgba(0, 0, 0, 0.04);
+  /* spring curves */
+  --ease-spring: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --ease-snappy: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-smooth: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-/* Dark mode */
+/* ─── Premium Dark Mode ─── */
 .dark {
-  --background: #030712;
-  --foreground: #f9fafb;
-  --surface: #0a0f1a;
-  --surface-hover: #111827;
-  --card: #0a0f1a;
-  --card-hover: #0f1525;
-  --border: rgba(255, 255, 255, 0.06);
-  --border-subtle: rgba(255, 255, 255, 0.03);
-  --muted: #6b7280;
-  --muted-foreground: rgba(255, 255, 255, 0.4);
-  --accent: #6366f1;
-  --accent-glow: rgba(99, 102, 241, 0.15);
-  --sidebar-bg: rgba(10, 15, 26, 0.8);
-  --header-bg: rgba(3, 7, 18, 0.5);
-  --overlay: rgba(255, 255, 255, 0.04);
-  --shadow-color: rgba(0, 0, 0, 0.3);
+  --background: #0D0D0F;
+  --foreground: #F5F5F7;
+  --surface: #1A1A1E;
+  --surface-hover: #222226;
+  --card: #1A1A1E;
+  --card-hover: #222226;
+  --border: rgba(255, 255, 255, 0.08);
+  --border-subtle: rgba(255, 255, 255, 0.04);
+  --muted: #6b6b73;
+  --muted-foreground: rgba(255, 255, 255, 0.42);
+  --accent: #7F84F6;
+  --accent-hover: #6C70E8;
+  --accent-glow: rgba(127, 132, 246, 0.14);
+  --sidebar-bg: rgba(13, 13, 15, 0.9);
+  --header-bg: rgba(13, 13, 15, 0.65);
+  --overlay: rgba(255, 255, 255, 0.03);
+  --shadow-color: rgba(0, 0, 0, 0.4);
+  --positive: #00D68F;
+  --negative: #FF6B6B;
+  --warning: #FFC542;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2), 0 1px 3px rgba(0, 0, 0, 0.15);
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.25), 0 4px 12px rgba(0, 0, 0, 0.2);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.35), 0 16px 48px rgba(0, 0, 0, 0.25);
 }
 
 @theme inline {
@@ -52,11 +70,15 @@
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
   --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
   --color-accent-glow: var(--accent-glow);
   --color-sidebar-bg: var(--sidebar-bg);
   --color-header-bg: var(--header-bg);
   --color-overlay: var(--overlay);
   --color-shadow: var(--shadow-color);
+  --color-positive: var(--positive);
+  --color-negative: var(--negative);
+  --color-warning: var(--warning);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
@@ -68,52 +90,19 @@ body {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
+/* ─── Entrance Animations (spring-based) ─── */
 @keyframes fade-in {
-  from { opacity: 0; transform: translateY(10px); }
+  from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes slide-in {
-  from { opacity: 0; transform: translateX(-10px); }
+  from { opacity: 0; transform: translateX(-8px); }
   to { opacity: 1; transform: translateX(0); }
 }
 
-@keyframes pulse-glow {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 1; }
-}
-
-@keyframes count-up {
-  from { opacity: 0; transform: scale(0.5); }
-  to { opacity: 1; transform: scale(1); }
-}
-
-@keyframes gradient-shift {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-
-.animate-fade-in { animation: fade-in 0.5s ease-out forwards; }
-.animate-slide-in { animation: slide-in 0.3s ease-out forwards; }
-.animate-pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
-.animate-count-up { animation: count-up 0.6s ease-out forwards; }
-.animate-gradient {
-  background-size: 200% 200%;
-  animation: gradient-shift 3s ease infinite;
-}
-
-/* Stagger animation delays for cards */
-.stagger-1 { animation-delay: 0.05s; }
-.stagger-2 { animation-delay: 0.1s; }
-.stagger-3 { animation-delay: 0.15s; }
-.stagger-4 { animation-delay: 0.2s; }
-.stagger-5 { animation-delay: 0.25s; }
-.stagger-6 { animation-delay: 0.3s; }
-
-/* Calendar animations */
 @keyframes scale-in {
-  from { opacity: 0; transform: scale(0.95); }
+  from { opacity: 0; transform: scale(0.96); }
   to { opacity: 1; transform: scale(1); }
 }
 
@@ -122,15 +111,31 @@ body {
   to { opacity: 1; }
 }
 
-.animate-scale-in { animation: scale-in 0.2s ease-out forwards; }
+.animate-fade-in { animation: fade-in 0.35s var(--ease-smooth) forwards; }
+.animate-slide-in { animation: slide-in 0.25s var(--ease-smooth) forwards; }
+.animate-scale-in { animation: scale-in 0.2s var(--ease-spring) forwards; }
 .animate-backdrop { animation: backdrop-in 0.2s ease-out forwards; }
 
-/* Task completion animations */
-@keyframes checkbox-pop {
+/* Stagger delays — snappy 30ms intervals */
+.stagger-1 { animation-delay: 0.03s; }
+.stagger-2 { animation-delay: 0.06s; }
+.stagger-3 { animation-delay: 0.09s; }
+.stagger-4 { animation-delay: 0.12s; }
+.stagger-5 { animation-delay: 0.15s; }
+.stagger-6 { animation-delay: 0.18s; }
+
+/* Smooth number count (no bounce) */
+@keyframes count-up {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.animate-count-up { animation: count-up 0.4s var(--ease-spring) forwards; }
+
+/* ─── Task Completion (refined) ─── */
+@keyframes checkbox-spring {
   0% { transform: scale(1); }
-  30% { transform: scale(1.35); }
-  50% { transform: scale(0.9); }
-  70% { transform: scale(1.1); }
+  40% { transform: scale(0.88); }
+  70% { transform: scale(1.05); }
   100% { transform: scale(1); }
 }
 
@@ -140,14 +145,14 @@ body {
 }
 
 @keyframes success-ring {
-  0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.5); }
-  70% { box-shadow: 0 0 0 8px rgba(34, 197, 94, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+  0% { box-shadow: 0 0 0 0 var(--positive); }
+  50% { box-shadow: 0 0 0 5px transparent; }
+  100% { box-shadow: 0 0 0 0 transparent; }
 }
 
 @keyframes task-complete-fade {
   0% { opacity: 1; transform: translateX(0); }
-  100% { opacity: 0; transform: translateX(12px); max-height: 0; padding-top: 0; padding-bottom: 0; margin-top: 0; margin-bottom: 0; }
+  100% { opacity: 0; transform: translateX(8px); max-height: 0; padding-top: 0; padding-bottom: 0; margin-top: 0; margin-bottom: 0; }
 }
 
 @keyframes strikethrough {
@@ -156,21 +161,21 @@ body {
 }
 
 .animate-checkbox-pop {
-  animation: checkbox-pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  animation: checkbox-spring 0.25s var(--ease-snappy) forwards;
 }
 
 .animate-success-ring {
-  animation: success-ring 0.6s ease-out forwards;
+  animation: success-ring 0.4s var(--ease-spring) forwards;
 }
 
 .animate-checkmark-draw svg polyline {
   stroke-dasharray: 24;
   stroke-dashoffset: 24;
-  animation: checkmark-draw 0.3s ease-out 0.15s forwards;
+  animation: checkmark-draw 0.25s ease-out 0.1s forwards;
 }
 
 .animate-task-complete {
-  animation: task-complete-fade 0.45s ease-in 0.5s forwards;
+  animation: task-complete-fade 0.35s var(--ease-spring) 0.4s forwards;
   overflow: hidden;
 }
 
@@ -184,26 +189,24 @@ body {
   top: 50%;
   height: 1.5px;
   background: currentColor;
-  opacity: 0.6;
-  animation: strikethrough 0.3s ease-out 0.1s forwards;
+  opacity: 0.5;
+  animation: strikethrough 0.25s ease-out 0.08s forwards;
 }
 
-/* Habit animations */
+/* ─── Habit Animations (subtle) ─── */
 @keyframes habit-celebrate {
-  0% { transform: scale(1); }
-  25% { transform: scale(1.02); }
-  50% { transform: scale(0.98); }
-  100% { transform: scale(1); }
+  0% { background-color: transparent; }
+  30% { background-color: rgba(0, 196, 140, 0.06); }
+  100% { background-color: transparent; }
 }
 
 .animate-habit-celebrate {
-  animation: habit-celebrate 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  animation: habit-celebrate 0.5s var(--ease-spring) forwards;
 }
 
 .heatmap-cell:hover {
-  opacity: 0.8;
-  transform: scale(1.2);
-  transition: transform 0.1s ease-out;
+  opacity: 0.85;
+  transition: opacity 0.15s var(--ease-spring);
 }
 
 /* Heatmap theme colors */
@@ -223,13 +226,13 @@ body {
   --heatmap-4: #10b981;
 }
 
-/* Scrollbar styling */
-::-webkit-scrollbar { width: 6px; }
+/* ─── Scrollbar (refined) ─── */
+::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--muted); border-radius: 3px; opacity: 0.3; }
-::-webkit-scrollbar-thumb:hover { background: var(--muted-foreground); }
+::-webkit-scrollbar-thumb { background: var(--muted-foreground); border-radius: 2px; opacity: 0.2; }
+::-webkit-scrollbar-thumb:hover { background: var(--muted); }
 
-/* Safe area insets for notched devices */
+/* ─── Safe area & mobile ─── */
 body {
   padding-top: env(safe-area-inset-top);
   padding-bottom: env(safe-area-inset-bottom);
@@ -237,188 +240,119 @@ body {
   padding-right: env(safe-area-inset-right);
 }
 
-/* Prevent text size adjust on orientation change */
 html {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
 }
 
-/* Smooth touch scrolling */
 .overflow-y-auto,
 .overflow-x-auto {
   -webkit-overflow-scrolling: touch;
 }
 
-/* Prevent tap highlight on mobile */
 @media (max-width: 767px) {
   button, a, [role="button"] {
     -webkit-tap-highlight-color: transparent;
   }
 }
 
-/* Goal progress ring animation */
+/* ─── Goal Animations (refined) ─── */
 @keyframes progress-ring {
   from { stroke-dashoffset: var(--ring-circumference); }
   to { stroke-dashoffset: var(--ring-offset); }
 }
 
 .goal-progress-ring {
-  animation: progress-ring 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: progress-ring 1s var(--ease-smooth) forwards;
 }
 
 @keyframes goal-card-in {
-  from { opacity: 0; transform: translateY(20px) scale(0.98); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .animate-goal-card {
-  animation: goal-card-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: goal-card-in 0.4s var(--ease-smooth) forwards;
   opacity: 0;
 }
 
-/* Goal progress quick-button pop */
-@keyframes quick-btn-pop {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.15); }
-  100% { transform: scale(1); }
+/* Goal completion — subtle green tint */
+.goal-completing {
+  position: relative;
+  overflow: hidden;
 }
 
-.goal-quick-btn:active {
-  animation: quick-btn-pop 0.25s ease-out;
+.goal-completing::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: rgba(0, 196, 140, 0.06);
+  animation: goal-complete-tint 0.8s var(--ease-spring) forwards;
+  pointer-events: none;
+  border-radius: inherit;
 }
 
-/* Goal completion celebrate */
-@keyframes goal-celebrate {
-  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
-  50% { transform: scale(1.01); box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
-  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+@keyframes goal-complete-tint {
+  0% { opacity: 0; }
+  40% { opacity: 1; }
+  100% { opacity: 0.6; }
 }
 
-.animate-goal-celebrate {
-  animation: goal-celebrate 0.6s ease-out;
-}
-
-/* Delete confirm shake */
-@keyframes confirm-shake {
-  0%, 100% { transform: translateX(0); }
-  20% { transform: translateX(-4px); }
-  40% { transform: translateX(4px); }
-  60% { transform: translateX(-2px); }
-  80% { transform: translateX(2px); }
-}
-
-.animate-confirm-shake {
-  animation: confirm-shake 0.4s ease-out;
-}
-
-/* Ring 100% complete — idle pulse */
-@keyframes ring-glow-pulse {
-  0%, 100% { opacity: 0.08; }
-  50% { opacity: 0.2; }
-}
-
+/* Ring 100% complete — subtle static glow (no infinite pulse) */
 .ring-complete-pulse {
-  animation: ring-glow-pulse 2.5s ease-in-out infinite;
+  filter: drop-shadow(0 0 8px rgba(0, 196, 140, 0.2));
 }
 
-/* Ring 100% — initial glow-in with bounce */
 .ring-complete-glow {
-  animation: ring-glow-in 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: ring-glow-in 0.6s var(--ease-smooth) forwards;
 }
 
 @keyframes ring-glow-in {
-  0% { filter: drop-shadow(0 0 0px rgba(34, 197, 94, 0)); transform: scale(0.95); }
-  30% { filter: drop-shadow(0 0 24px rgba(34, 197, 94, 0.6)); transform: scale(1.1); }
-  60% { filter: drop-shadow(0 0 16px rgba(34, 197, 94, 0.4)); transform: scale(0.98); }
-  100% { filter: drop-shadow(0 0 12px rgba(34, 197, 94, 0.25)); transform: scale(1); }
+  0% { filter: drop-shadow(0 0 0px rgba(0, 196, 140, 0)); transform: scale(0.97); }
+  60% { filter: drop-shadow(0 0 12px rgba(0, 196, 140, 0.3)); transform: scale(1.02); }
+  100% { filter: drop-shadow(0 0 8px rgba(0, 196, 140, 0.15)); transform: scale(1); }
 }
 
-/* Checkmark draw-in with overshoot */
+/* Checkmark draw-in */
 @keyframes check-draw-in {
   0% { stroke-dashoffset: 30; opacity: 0; }
-  60% { stroke-dashoffset: -2; opacity: 1; }
+  60% { stroke-dashoffset: 0; opacity: 1; }
   100% { stroke-dashoffset: 0; opacity: 1; }
 }
 
 .ring-complete-check polyline {
   stroke-dasharray: 30;
   stroke-dashoffset: 30;
-  animation: check-draw-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.3s forwards;
+  animation: check-draw-in 0.4s var(--ease-smooth) 0.25s forwards;
 }
 
-/* ---- Goal completion card animation ---- */
-.goal-completing {
-  position: relative;
-  overflow: hidden;
-}
-
-/* Green light sweep across card */
-.goal-completing::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  background: linear-gradient(
-    105deg,
-    transparent 0%,
-    rgba(34, 197, 94, 0.08) 20%,
-    rgba(34, 197, 94, 0.15) 50%,
-    rgba(34, 197, 94, 0.08) 80%,
-    transparent 100%
-  );
-  animation: completion-sweep 0.9s ease-out forwards;
-  pointer-events: none;
-}
-
-@keyframes completion-sweep {
-  0% { transform: translateX(-100%); opacity: 0; }
-  20% { opacity: 1; }
-  100% { transform: translateX(100%); opacity: 0; }
-}
-
-/* Sparkle particles */
-.goal-completing::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  pointer-events: none;
-  background-image:
-    radial-gradient(2px 2px at 15% 30%, rgba(34, 197, 94, 0.8) 50%, transparent 100%),
-    radial-gradient(2px 2px at 75% 25%, rgba(34, 197, 94, 0.6) 50%, transparent 100%),
-    radial-gradient(1.5px 1.5px at 40% 70%, rgba(34, 197, 94, 0.7) 50%, transparent 100%),
-    radial-gradient(2px 2px at 85% 65%, rgba(34, 197, 94, 0.5) 50%, transparent 100%),
-    radial-gradient(1.5px 1.5px at 25% 80%, rgba(34, 197, 94, 0.6) 50%, transparent 100%),
-    radial-gradient(2px 2px at 60% 15%, rgba(34, 197, 94, 0.7) 50%, transparent 100%);
-  animation: sparkle-burst 1s ease-out forwards;
-}
-
-@keyframes sparkle-burst {
-  0% { opacity: 0; transform: scale(0.8); }
-  30% { opacity: 1; transform: scale(1.05); }
-  70% { opacity: 0.6; transform: scale(1.1); }
-  100% { opacity: 0; transform: scale(1.2); }
-}
-
-/* Card border glow pulse during completion */
-@keyframes completion-border-glow {
-  0% { border-color: var(--border); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
-  30% { border-color: rgba(34, 197, 94, 0.5); box-shadow: 0 0 30px rgba(34, 197, 94, 0.15), 0 0 60px rgba(34, 197, 94, 0.08); }
-  70% { border-color: rgba(34, 197, 94, 0.3); box-shadow: 0 0 20px rgba(34, 197, 94, 0.1); }
-  100% { border-color: rgba(34, 197, 94, 0.2); box-shadow: 0 0 10px rgba(34, 197, 94, 0.05); }
-}
-
-.goal-completing {
-  animation: completion-border-glow 1.2s ease-out forwards;
-}
-
-/* Milestone celebrate flash */
+/* Milestone celebrate — subtle bg flash */
 .milestone-celebrate {
-  animation: milestone-flash 0.5s ease-out;
+  animation: milestone-flash 0.4s var(--ease-spring);
 }
 
 @keyframes milestone-flash {
   0% { background: transparent; }
-  30% { background: rgba(34, 197, 94, 0.1); }
+  30% { background: rgba(0, 196, 140, 0.08); }
   100% { background: transparent; }
+}
+
+/* ─── Premium Utility Classes ─── */
+
+/* Card hover lift effect */
+.card-hover {
+  transition: transform 0.2s var(--ease-spring), box-shadow 0.2s var(--ease-spring);
+}
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+/* Button press feedback */
+.btn-press {
+  transition: transform 0.1s var(--ease-spring);
+}
+.btn-press:active {
+  transform: scale(0.97);
 }

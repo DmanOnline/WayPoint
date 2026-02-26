@@ -107,11 +107,8 @@ export default function Header({ onMenuClick }: HeaderProps) {
         </button>
 
         <div>
-          <h1 className="text-base md:text-lg font-semibold text-foreground/90">
-            {greeting}{" "}
-            <span className="animate-gradient bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-transparent">
-              {displayName}
-            </span>
+          <h1 className="text-sm md:text-base font-medium text-foreground">
+            {greeting}, <span className="font-semibold">{displayName}</span>
           </h1>
         </div>
       </div>
@@ -126,7 +123,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
         <div className="relative" ref={menuRef}>
           <button
             onClick={() => setShowMenu(!showMenu)}
-            className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-xs font-bold text-white hover:scale-105 transition-transform duration-200"
+            className="w-8 h-8 rounded-full bg-accent flex items-center justify-center text-xs font-bold text-white hover:brightness-110 active:scale-95 transition-all duration-150"
           >
             {initial}
           </button>

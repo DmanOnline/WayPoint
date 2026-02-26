@@ -39,7 +39,7 @@ export default function NoteGrid({ notes, onClickNote, onTogglePin, onNewNote }:
       {/* Pinned section */}
       {pinned.length > 0 && (
         <div>
-          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 px-1">
+          <p className="text-xs font-semibold text-muted-foreground mb-3 px-1">
             Vastgepind
           </p>
           <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-3">
@@ -59,7 +59,7 @@ export default function NoteGrid({ notes, onClickNote, onTogglePin, onNewNote }:
       {unpinned.length > 0 && (
         <div>
           {pinned.length > 0 && (
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 px-1">
+            <p className="text-xs font-semibold text-muted-foreground mb-3 px-1">
               Overige
             </p>
           )}

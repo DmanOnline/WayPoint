@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -87,6 +87,14 @@ interface SidebarProps {
 export default function Sidebar({ mobileOpen = false, onMobileClose }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
   const pathname = usePathname();
+  const navRef = useRef<HTMLElement>(null);
+  const itemRefs = useRef<Map<string, HTMLAnchorElement>>(new Map());
+  const [indicatorStyle, setIndicatorStyle] = useState<{
+    top: number;
+    height: number;
+    opacity: number;
+  }>({ top: 0, height: 0, opacity: 0 });
+  const [hasAnimated, setHasAnimated] = useState(false);
 
   // Close mobile sidebar on route change
   useEffect(() => {
@@ -95,6 +103,48 @@ export default function Sidebar({ mobileOpen = false, onMobileClose }: SidebarPr
 
   // Show labels: always on mobile when open, on desktop when not collapsed
   const showLabels = mobileOpen || !collapsed;
+
+  // Measure and update the floating indicator position
+  const updateIndicator = useCallback(() => {
+    const activeEl = itemRefs.current.get(pathname);
+    const navEl = navRef.current;
+    if (!activeEl || !navEl) {
+      setIndicatorStyle((s) => ({ ...s, opacity: 0 }));
+      return;
+    }
+
+    const navRect = navEl.getBoundingClientRect();
+    const itemRect = activeEl.getBoundingClientRect();
+
+    setIndicatorStyle({
+      top: itemRect.top - navRect.top,
+      height: itemRect.height,
+      opacity: 1,
+    });
+
+    // Enable transitions after first paint
+    if (!hasAnimated) {
+      requestAnimationFrame(() => setHasAnimated(true));
+    }
+  }, [pathname, hasAnimated]);
+
+  useEffect(() => {
+    updateIndicator();
+  }, [pathname, collapsed, mobileOpen, updateIndicator]);
+
+  // Also update on resize
+  useEffect(() => {
+    window.addEventListener("resize", updateIndicator);
+    return () => window.removeEventListener("resize", updateIndicator);
+  }, [updateIndicator]);
+
+  const setItemRef = useCallback((href: string, el: HTMLAnchorElement | null) => {
+    if (el) {
+      itemRefs.current.set(href, el);
+    } else {
+      itemRefs.current.delete(href);
+    }
+  }, []);
 
   return (
     <>
@@ -115,30 +165,49 @@ export default function Sidebar({ mobileOpen = false, onMobileClose }: SidebarPr
       >
         {/* Logo */}
         <div className="flex items-center gap-3 px-5 h-16 border-b border-border">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center flex-shrink-0">
+          <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center flex-shrink-0">
             <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z" />
             </svg>
           </div>
           {showLabels && (
-            <span className="text-sm font-semibold tracking-tight text-foreground/90 animate-slide-in">
+            <span className="text-sm font-semibold tracking-tight text-foreground/90">
               MyLifeSystem
             </span>
           )}
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+        <nav ref={navRef} className="relative flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+          {/* Liquid Glass Indicator */}
+          <div
+            className="absolute left-3 right-3 rounded-lg pointer-events-none z-0"
+            style={{
+              top: indicatorStyle.top,
+              height: indicatorStyle.height,
+              opacity: indicatorStyle.opacity,
+              transition: hasAnimated
+                ? "top 0.5s cubic-bezier(0.32, 0.72, 0, 1), height 0.3s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.2s ease"
+                : "none",
+              background: "var(--accent-glow)",
+              backdropFilter: "blur(12px) saturate(1.8)",
+              WebkitBackdropFilter: "blur(12px) saturate(1.8)",
+              border: "1px solid rgba(108, 99, 255, 0.15)",
+              boxShadow: "0 0 20px var(--accent-glow), inset 0 1px 0 rgba(255, 255, 255, 0.1), inset 0 -1px 0 rgba(0, 0, 0, 0.05)",
+            }}
+          />
+
           {navItems.map((item) => {
             const isActive = pathname === item.href;
             return (
               <Link
                 key={item.name}
                 href={item.href}
-                className={`group flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+                ref={(el) => setItemRef(item.href, el)}
+                className={`group relative z-10 flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors duration-150 ${
                   isActive
-                    ? "bg-accent/10 text-accent shadow-[inset_0_0_0_1px_var(--accent-glow)]"
-                    : "text-muted-foreground hover:text-foreground hover:bg-overlay"
+                    ? "text-accent"
+                    : "text-muted-foreground hover:text-foreground hover:bg-surface-hover"
                 }`}
               >
                 <span
@@ -148,7 +217,7 @@ export default function Sidebar({ mobileOpen = false, onMobileClose }: SidebarPr
                 >
                   {item.icon}
                 </span>
-                {showLabels && <span className="animate-slide-in">{item.name}</span>}
+                {showLabels && <span>{item.name}</span>}
               </Link>
             );
           })}
@@ -169,7 +238,7 @@ export default function Sidebar({ mobileOpen = false, onMobileClose }: SidebarPr
             >
               <path strokeLinecap="round" strokeLinejoin="round" d="M18.75 19.5l-7.5-7.5 7.5-7.5m-6 15L5.25 12l7.5-7.5" />
             </svg>
-            {!collapsed && <span className="animate-slide-in">Collapse</span>}
+            {!collapsed && <span>Collapse</span>}
           </button>
         </div>
       </aside>

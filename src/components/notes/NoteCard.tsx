@@ -68,7 +68,7 @@ export default function NoteCard({ note, onClick, onTogglePin }: NoteCardProps) 
   return (
     <div
       onClick={() => onClick(note)}
-      className="break-inside-avoid mb-3 group cursor-pointer rounded-xl border border-border hover:border-accent/30 transition-all duration-200 hover:shadow-md overflow-hidden"
+      className="break-inside-avoid mb-3 group cursor-pointer rounded-xl border border-border hover:bg-surface-hover transition-all duration-200 hover:shadow-md overflow-hidden"
       style={hasAccent ? { backgroundColor: `${accentColor}14` } : undefined}
     >
       {/* Color accent bar */}

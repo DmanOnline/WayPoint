@@ -44,7 +44,7 @@ export default function HabitStats({ habits, allCompletions }: HabitStatsProps) 
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
       {/* Today progress ring */}
-      <div className="col-span-2 md:col-span-1 rounded-2xl border border-border bg-card/60 p-4 flex flex-col items-center">
+      <div className="col-span-2 md:col-span-1 rounded-2xl border border-border bg-card p-4 flex flex-col items-center">
         <div className="relative w-20 h-20 mb-2">
           <svg viewBox="0 0 80 80" className="w-full h-full -rotate-90">
             <circle
@@ -77,7 +77,7 @@ export default function HabitStats({ habits, allCompletions }: HabitStatsProps) 
       </div>
 
       {/* Current streak */}
-      <div className="rounded-2xl border border-border bg-card/60 p-4 flex flex-col items-center justify-center">
+      <div className="rounded-2xl border border-border bg-card p-4 flex flex-col items-center justify-center">
         <div className="flex items-center gap-1.5 mb-1">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="text-orange-400">
             <path
@@ -92,7 +92,7 @@ export default function HabitStats({ habits, allCompletions }: HabitStatsProps) 
       </div>
 
       {/* Longest streak */}
-      <div className="rounded-2xl border border-border bg-card/60 p-4 flex flex-col items-center justify-center">
+      <div className="rounded-2xl border border-border bg-card p-4 flex flex-col items-center justify-center">
         <div className="flex items-center gap-1.5 mb-1">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="text-yellow-400">
             <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="currentColor" />
@@ -104,7 +104,7 @@ export default function HabitStats({ habits, allCompletions }: HabitStatsProps) 
       </div>
 
       {/* Week + Month rates */}
-      <div className="rounded-2xl border border-border bg-card/60 p-4 flex flex-col items-center justify-center gap-2">
+      <div className="rounded-2xl border border-border bg-card p-4 flex flex-col items-center justify-center gap-2">
         <div>
           <div className="flex items-center gap-2">
             <div className="flex-1 h-1.5 rounded-full bg-border overflow-hidden" style={{ width: 60 }}>

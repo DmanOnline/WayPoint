@@ -86,7 +86,7 @@ export async function POST(request: NextRequest) {
         title: title.trim(),
         description: description || null,
         priority: priority || "medium",
-        color: color || "#6366f1",
+        color: color || "#6C63FF",
         categoryId: categoryId || null,
         targetDate: targetDate ? new Date(targetDate + "T00:00:00.000Z") : null,
         sortOrder: (maxSort._max.sortOrder ?? 0) + 1,

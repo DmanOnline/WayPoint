@@ -45,7 +45,7 @@ export default function CalendarSidebar({
       <div className={`w-[240px] shrink-0 border-r border-border bg-card/30 p-4 flex-col gap-4 overflow-y-auto ${mobileOpen ? "flex fixed inset-y-0 left-0 z-50" : "hidden"} md:flex md:relative`}>
       {/* Own calendars */}
       <div>
-        <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+        <h3 className="text-xs font-semibold text-muted-foreground mb-2">
           Mijn Kalenders
         </h3>
         <div className="space-y-1">
@@ -74,7 +74,7 @@ export default function CalendarSidebar({
       {/* Linked calendars */}
       {linkedCalendars.length > 0 && (
         <div>
-          <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+          <h3 className="text-xs font-semibold text-muted-foreground mb-2">
             Gelinkte Kalenders
           </h3>
           <div className="space-y-1">

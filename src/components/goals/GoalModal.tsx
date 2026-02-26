@@ -11,7 +11,7 @@ interface GoalModalProps {
 }
 
 const COLORS = [
-  "#6366f1", "#8b5cf6", "#a855f7",
+  "#6C63FF", "#8b5cf6", "#a855f7",
   "#ec4899", "#f43f5e", "#ef4444",
   "#f97316", "#f59e0b", "#eab308",
   "#22c55e", "#10b981", "#14b8a6",
@@ -28,7 +28,7 @@ export default function GoalModal({
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState<GoalPriority>("medium");
-  const [color, setColor] = useState("#6366f1");
+  const [color, setColor] = useState("#6C63FF");
   const [categoryId, setCategoryId] = useState("");
   const [targetDate, setTargetDate] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -46,7 +46,7 @@ export default function GoalModal({
       setTitle("");
       setDescription("");
       setPriority("medium");
-      setColor("#6366f1");
+      setColor("#6C63FF");
       setCategoryId("");
       setTargetDate("");
     }

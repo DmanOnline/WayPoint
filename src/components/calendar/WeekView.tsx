@@ -98,7 +98,7 @@ export default function WeekView({
   }
 
   return (
-    <div className="rounded-2xl border border-border bg-card/60 overflow-hidden animate-fade-in flex flex-col" style={{ height: "calc(100vh - 220px)" }}>
+    <div className="rounded-2xl border border-border bg-card overflow-hidden animate-fade-in flex flex-col" style={{ height: "calc(100vh - 220px)" }}>
       {/* Day headers */}
       <div className="grid grid-cols-[60px_repeat(7,1fr)] border-b border-border shrink-0">
         <div className="p-2 flex items-center justify-center">

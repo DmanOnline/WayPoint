@@ -47,7 +47,7 @@ export default function HabitHeatmap({ data }: HabitHeatmapProps) {
   ];
 
   return (
-    <div className="rounded-2xl border border-border bg-card/60 p-5">
+    <div className="rounded-2xl border border-border bg-card p-5">
       <h3 className="text-sm font-semibold text-foreground mb-4">Activiteit</h3>
 
       <div className="overflow-x-auto pb-2">

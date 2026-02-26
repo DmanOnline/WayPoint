@@ -41,7 +41,7 @@ export default function ThemeToggle() {
         <button
           key={option.value}
           onClick={() => setTheme(option.value)}
-          className={`relative flex items-center justify-center rounded-md p-1.5 transition-all duration-200 ${
+          className={`relative flex items-center justify-center rounded-md p-1.5 transition-all duration-150 active:scale-95 ${
             theme === option.value
               ? "bg-accent text-white shadow-sm"
               : "text-muted-foreground hover:text-foreground hover:bg-overlay"

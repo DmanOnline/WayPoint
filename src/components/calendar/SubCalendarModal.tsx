@@ -177,7 +177,7 @@ export default function SubCalendarModal({
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-4 py-2 text-sm font-medium text-white rounded-lg bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 shadow-lg shadow-indigo-500/25 transition-all disabled:opacity-50"
+              className="px-4 py-2 text-sm font-medium text-white rounded-lg bg-accent hover:bg-accent-hover active:scale-[0.98] shadow-sm transition-all duration-150 disabled:opacity-50"
             >
               {isSubmitting
                 ? "Opslaan..."

@@ -44,7 +44,6 @@ export default function QuickStats() {
       try {
         const today = todayStr();
 
-        // Fetch all non-completed tasks and completed tasks in parallel
         const [tasksRes, completedRes, eventsRes] = await Promise.all([
           fetch("/api/tasks?status=todo"),
           fetch("/api/tasks?status=done"),
@@ -84,7 +83,6 @@ export default function QuickStats() {
         if (eventsRes.ok) {
           const data = await eventsRes.json();
           const events: EventData[] = data.events || [];
-          // Alleen echte kalender events tellen, geen taken
           eventsToday = events.filter((e) => !e._isTask).length;
         }
 
@@ -102,7 +100,7 @@ export default function QuickStats() {
   const items = [
     {
       label: "Taken vandaag",
-      value: stats.tasksToday.toString(),
+      value: stats.tasksToday,
       change: stats.tasksToday === 0 ? "Geen taken" : stats.tasksToday === 1 ? "1 taak gepland" : `${stats.tasksToday} taken gepland`,
       icon: (
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
@@ -112,7 +110,7 @@ export default function QuickStats() {
     },
     {
       label: "Events vandaag",
-      value: stats.eventsToday.toString(),
+      value: stats.eventsToday,
       change: stats.eventsToday === 0 ? "Geen events" : stats.eventsToday === 1 ? "1 event gepland" : `${stats.eventsToday} events gepland`,
       icon: (
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
@@ -122,7 +120,7 @@ export default function QuickStats() {
     },
     {
       label: "Voltooid",
-      value: stats.completedTasks.toString(),
+      value: stats.completedTasks,
       change: stats.completedTasks === 0 ? "Nog geen taken" : `${stats.completedTasks} taken afgerond`,
       icon: (
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
@@ -132,8 +130,9 @@ export default function QuickStats() {
     },
     {
       label: "Verlopen",
-      value: stats.overdueTasks.toString(),
+      value: stats.overdueTasks,
       change: stats.overdueTasks === 0 ? "Alles op schema" : `${stats.overdueTasks} verlopen`,
+      isNegative: true,
       icon: (
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
@@ -143,22 +142,25 @@ export default function QuickStats() {
   ];
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
       {items.map((stat, i) => (
         <div
           key={stat.label}
-          className={`relative overflow-hidden rounded-xl border border-border bg-card/60 p-4 transition-colors duration-300 animate-fade-in opacity-0 stagger-${i + 1}`}
+          className={`rounded-xl bg-card border border-border p-4 transition-colors duration-200 animate-fade-in opacity-0 stagger-${i + 1}`}
         >
-          <div className="flex items-center gap-2 mb-3">
-            <span className="text-muted">{stat.icon}</span>
-            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-muted-foreground">{stat.icon}</span>
+            <span className="text-xs font-medium text-muted-foreground">
               {stat.label}
             </span>
           </div>
-          <p className="text-2xl font-bold text-foreground/90 animate-count-up">
+          <p className={`text-3xl font-bold tabular-nums leading-none ${
+            loading ? "text-muted-foreground" :
+            (stat.isNegative && stat.value > 0) ? "text-negative" : "text-foreground"
+          }`}>
             {loading ? "–" : stat.value}
           </p>
-          <p className="text-xs text-muted mt-1">
+          <p className="text-[11px] text-muted-foreground mt-1.5">
             {loading ? "Laden..." : stat.change}
           </p>
         </div>

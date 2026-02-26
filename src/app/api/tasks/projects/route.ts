@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
     data: {
       userId: session.userId,
       name: name.trim(),
-      color: color || "#6366f1",
+      color: color || "#6C63FF",
       sortOrder: (maxSort._max.sortOrder ?? 0) + 1,
     },
     include: {

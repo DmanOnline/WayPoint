@@ -69,9 +69,9 @@ export default function DateStrip({
               key={dateStr}
               ref={isToday ? todayRef : undefined}
               onClick={() => onSelectDate(day)}
-              className={`shrink-0 flex flex-col items-center w-11 py-1.5 rounded-xl transition-all ${
+              className={`shrink-0 flex flex-col items-center w-11 py-1.5 rounded-xl transition-all duration-150 ${
                 isSelected
-                  ? "bg-accent text-white shadow-sm"
+                  ? "bg-foreground text-background shadow-sm"
                   : isToday
                   ? "bg-accent/10 text-accent"
                   : isFuture
@@ -80,14 +80,14 @@ export default function DateStrip({
               }`}
             >
               {showMonth && (
-                <span className={`text-[9px] font-medium mb-0.5 ${isSelected ? "text-white/70" : "text-muted-foreground/60"}`}>
+                <span className={`text-[9px] font-medium mb-0.5 ${isSelected ? "text-background/70" : "text-muted-foreground/60"}`}>
                   {MONTH_NAMES[day.getMonth()]}
                 </span>
               )}
-              <span className={`text-[10px] ${isSelected ? "text-white/80" : ""}`}>
+              <span className={`text-[10px] ${isSelected ? "text-background/80" : ""}`}>
                 {dayName}
               </span>
-              <span className={`text-sm font-semibold leading-tight ${isSelected ? "text-white" : ""}`}>
+              <span className={`text-sm font-semibold leading-tight ${isSelected ? "text-background" : ""}`}>
                 {dayNum}
               </span>
               {/* Completion dot indicator */}
@@ -95,7 +95,7 @@ export default function DateStrip({
                 {total > 0 && (
                   <div
                     className={`w-1.5 h-1.5 rounded-full ${
-                      allDone ? "bg-emerald-400" : completed > 0 ? "bg-amber-400" : isPast ? "bg-red-400" : isSelected ? "bg-white/40" : "bg-border"
+                      allDone ? "bg-emerald-400" : completed > 0 ? "bg-amber-400" : isPast ? "bg-red-400" : isSelected ? "bg-background/40" : "bg-border"
                     }`}
                   />
                 )}

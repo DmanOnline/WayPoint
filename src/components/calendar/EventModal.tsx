@@ -234,7 +234,7 @@ export default function EventModal({
                 <button
                   onClick={() => handleRecurringSubmit("all")}
                   disabled={isSubmitting}
-                  className="flex-1 px-4 py-2 text-sm font-medium text-white rounded-lg bg-gradient-to-r from-indigo-500 to-purple-600 transition-all disabled:opacity-50"
+                  className="flex-1 px-4 py-2 text-sm font-medium text-white rounded-lg bg-accent hover:bg-accent-hover active:scale-[0.98] transition-all duration-150 disabled:opacity-50"
                 >
                   Alle evenementen
                 </button>

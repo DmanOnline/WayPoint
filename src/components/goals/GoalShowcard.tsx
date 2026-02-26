@@ -241,7 +241,7 @@ function ProgressRing({
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2.5" className="ring-complete-check">
               <polyline points="20 6 9 17 4 12" />
             </svg>
-            <span className="text-[10px] text-emerald-400 uppercase tracking-wider font-semibold mt-0.5">
+            <span className="text-[10px] text-emerald-400 font-semibold mt-0.5">
               100%
             </span>
           </>
@@ -255,7 +255,7 @@ function ProgressRing({
             >
               {progress}%
             </span>
-            <span className={`text-[10px] uppercase tracking-wider transition-colors duration-200 ${
+            <span className={`text-[10px] transition-colors duration-200 ${
               isDragging ? "text-foreground/60" : "text-muted-foreground"
             }`}>
               {interactive && (isHovered || isDragging) ? "sleep" : "klaar"}
@@ -363,7 +363,7 @@ export default function GoalShowcard({
 
   return (
     <div
-      className={`animate-goal-card relative rounded-2xl border overflow-hidden transition-all duration-500 ${
+      className={`animate-goal-card relative rounded-xl border overflow-hidden transition-all duration-500 ${
         isCompleted
           ? "opacity-60 border-border bg-card"
           : "border-border bg-card"
@@ -378,7 +378,7 @@ export default function GoalShowcard({
       onMouseLeave={() => setShowActions(false)}
     >
       {/* Completion overlay */}
-      {isCompleting && <div className="goal-completing absolute inset-0 z-10 pointer-events-none rounded-2xl" />}
+      {isCompleting && <div className="goal-completing absolute inset-0 z-10 pointer-events-none rounded-xl" />}
 
       {/* Color accent bar */}
       <div
@@ -525,7 +525,7 @@ export default function GoalShowcard({
         {/* Milestones */}
         <div className="mt-6">
           <div className="flex items-center gap-2 mb-3">
-            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            <h3 className="text-xs font-semibold text-muted-foreground">
               Mijlpalen
             </h3>
             {hasMilestones && (

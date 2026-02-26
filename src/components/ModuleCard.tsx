@@ -7,7 +7,7 @@ interface ModuleCardProps {
   description: string;
   icon: React.ReactNode;
   href: string;
-  gradient: string;
+  color: string;
   isActive: boolean;
   index: number;
 }
@@ -17,57 +17,58 @@ export default function ModuleCard({
   description,
   icon,
   href,
-  gradient,
+  color,
   isActive,
   index,
 }: ModuleCardProps) {
   return (
     <Link
-      href={href}
-      className={`group relative overflow-hidden rounded-2xl border border-border bg-card/60 p-6 transition-all duration-300 hover:border-border hover:bg-card-hover hover:-translate-y-1 hover:shadow-xl hover:shadow-shadow animate-fade-in opacity-0 stagger-${index + 1}`}
+      href={isActive ? href : "#"}
+      className={`group relative rounded-xl border border-border bg-card p-5 transition-all duration-200 animate-fade-in opacity-0 stagger-${index + 1} ${
+        isActive
+          ? "hover:shadow-md hover:-translate-y-[2px] cursor-pointer"
+          : "opacity-50 pointer-events-none"
+      }`}
+      style={{ ["--ease-spring" as string]: "cubic-bezier(0.25, 0.46, 0.45, 0.94)" }}
     >
-      {/* Gradient glow effect on hover */}
-      <div
-        className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 ${gradient} blur-3xl -z-10`}
-        style={{ transform: "scale(0.8)", filter: "blur(40px)" }}
-      />
-
       {/* Top accent line */}
       <div
-        className={`absolute top-0 left-0 right-0 h-[2px] ${gradient} opacity-40 group-hover:opacity-100 transition-opacity duration-300`}
+        className="absolute top-0 left-4 right-4 h-[2px] rounded-full opacity-60"
+        style={{ backgroundColor: color }}
       />
 
       {/* Icon */}
       <div
-        className={`w-12 h-12 rounded-xl ${gradient} flex items-center justify-center mb-4 shadow-lg transition-transform duration-300 group-hover:scale-110`}
+        className="w-10 h-10 rounded-lg flex items-center justify-center mb-3"
+        style={{ backgroundColor: `${color}14` }}
       >
-        {icon}
+        <span style={{ color }}>{icon}</span>
       </div>
 
       {/* Content */}
-      <h3 className="text-base font-semibold text-foreground/90 mb-1 group-hover:text-foreground transition-colors">
+      <h3 className="text-sm font-semibold text-foreground mb-1">
         {title}
       </h3>
-      <p className="text-sm text-muted-foreground leading-relaxed group-hover:text-muted transition-colors">
+      <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">
         {description}
       </p>
 
-      {/* Status */}
-      <div className="mt-4 flex items-center justify-between">
+      {/* Status + Arrow */}
+      <div className="mt-3 flex items-center justify-between">
         <span
-          className={`inline-flex items-center gap-1.5 text-xs font-medium ${
-            isActive ? "text-emerald-500" : "text-muted-foreground"
+          className={`inline-flex items-center gap-1.5 text-[11px] font-medium ${
+            isActive ? "text-positive" : "text-muted-foreground"
           }`}
         >
           <span
             className={`w-1.5 h-1.5 rounded-full ${
-              isActive ? "bg-emerald-500 animate-pulse-glow" : "bg-muted"
+              isActive ? "bg-positive" : "bg-muted"
             }`}
           />
-          {isActive ? "Active" : "Coming soon"}
+          {isActive ? "Actief" : "Binnenkort"}
         </span>
         <svg
-          className="w-4 h-4 text-muted group-hover:text-muted-foreground group-hover:translate-x-1 transition-all duration-200"
+          className="w-4 h-4 text-muted-foreground group-hover:text-foreground group-hover:translate-x-0.5 transition-all duration-150"
           fill="none"
           viewBox="0 0 24 24"
           strokeWidth={1.5}

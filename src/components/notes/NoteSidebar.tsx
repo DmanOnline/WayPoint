@@ -131,7 +131,7 @@ export default function NoteSidebar({
         <div className="p-3 flex-1 overflow-y-auto">
           <button
             onClick={() => setFoldersExpanded(!foldersExpanded)}
-            className="w-full flex items-center justify-between px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider hover:text-foreground transition-colors"
+            className="w-full flex items-center justify-between px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
           >
             <span>Mappen</span>
             <svg

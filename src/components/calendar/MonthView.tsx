@@ -44,13 +44,13 @@ export default function MonthView({
   }
 
   return (
-    <div className="rounded-2xl border border-border bg-card/60 overflow-hidden animate-fade-in">
+    <div className="rounded-2xl border border-border bg-card overflow-hidden animate-fade-in">
       {/* Day name headers */}
       <div className="grid grid-cols-7 border-b border-border">
         {DAY_NAMES_SHORT.map((day) => (
           <div
             key={day}
-            className="px-2 py-2.5 text-center text-xs font-semibold text-muted-foreground uppercase tracking-wider"
+            className="px-2 py-2.5 text-center text-xs font-semibold text-muted-foreground"
           >
             {day}
           </div>

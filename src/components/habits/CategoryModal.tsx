@@ -11,7 +11,7 @@ interface CategoryModalProps {
 }
 
 const COLORS = [
-  "#6366f1", "#8b5cf6", "#a855f7",
+  "#6C63FF", "#8b5cf6", "#a855f7",
   "#ec4899", "#f43f5e", "#ef4444",
   "#f97316", "#f59e0b", "#eab308",
   "#22c55e", "#10b981", "#14b8a6",
@@ -26,7 +26,7 @@ export default function CategoryModal({
 }: CategoryModalProps) {
   const { open, mode, category } = modalState;
   const [name, setName] = useState("");
-  const [color, setColor] = useState("#6366f1");
+  const [color, setColor] = useState("#6C63FF");
   const [icon, setIcon] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -38,7 +38,7 @@ export default function CategoryModal({
       setIcon(category.icon || "");
     } else if (open) {
       setName("");
-      setColor("#6366f1");
+      setColor("#6C63FF");
       setIcon("");
     }
     setIsSubmitting(false);

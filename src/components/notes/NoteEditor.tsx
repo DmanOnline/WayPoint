@@ -52,7 +52,7 @@ type FormatState = {
 
 const COLORS = [
   "#ffffff",
-  "#6366f1", "#8b5cf6", "#a855f7",
+  "#6C63FF", "#8b5cf6", "#a855f7",
   "#ec4899", "#f43f5e", "#ef4444",
   "#f97316", "#f59e0b", "#eab308",
   "#22c55e", "#10b981", "#14b8a6",

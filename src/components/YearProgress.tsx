@@ -13,7 +13,7 @@ function getYearData() {
 
   const elapsed =
     (now.getTime() - start.getTime()) / (1000 * 60 * 60 * 24);
-  const daysPassed = Math.floor(elapsed) + 1; // vandaag telt mee
+  const daysPassed = Math.floor(elapsed) + 1;
   const daysRemaining = totalDays - daysPassed;
   const percentage = (elapsed / totalDays) * 100;
 
@@ -34,10 +34,9 @@ function getYearData() {
   return { year, totalDays, daysPassed, daysRemaining, percentage, weekNumber };
 }
 
-// SVG circular progress
 function CircleProgress({ percentage }: { percentage: number }) {
-  const size = 120;
-  const stroke = 8;
+  const size = 110;
+  const stroke = 6;
   const radius = (size - stroke) / 2;
   const circumference = 2 * Math.PI * radius;
   const offset = circumference - (percentage / 100) * circumference;
@@ -45,7 +44,6 @@ function CircleProgress({ percentage }: { percentage: number }) {
   return (
     <div className="relative" style={{ width: size, height: size }}>
       <svg width={size} height={size} className="-rotate-90">
-        {/* Background track */}
         <circle
           cx={size / 2}
           cy={size / 2}
@@ -54,36 +52,27 @@ function CircleProgress({ percentage }: { percentage: number }) {
           stroke="var(--overlay)"
           strokeWidth={stroke}
         />
-        {/* Progress arc */}
         <circle
           cx={size / 2}
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke="url(#yearGradient)"
+          stroke="var(--accent)"
           strokeWidth={stroke}
           strokeLinecap="round"
           strokeDasharray={circumference}
           strokeDashoffset={offset}
           className="transition-all duration-1000 ease-out"
           style={{
-            filter: "drop-shadow(0 0 6px rgba(99, 102, 241, 0.4))",
+            filter: "drop-shadow(0 0 4px var(--accent-glow))",
           }}
         />
-        <defs>
-          <linearGradient id="yearGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#6366f1" />
-            <stop offset="50%" stopColor="#a855f7" />
-            <stop offset="100%" stopColor="#ec4899" />
-          </linearGradient>
-        </defs>
       </svg>
-      {/* Center text */}
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-2xl font-bold text-foreground/90 leading-none">
+        <span className="text-2xl font-bold text-foreground leading-none tabular-nums">
           {percentage.toFixed(1)}
         </span>
-        <span className="text-[10px] font-medium text-muted mt-0.5">
+        <span className="text-[10px] font-medium text-muted-foreground mt-0.5">
           procent
         </span>
       </div>
@@ -104,18 +93,9 @@ export default function YearProgress() {
   }, []);
 
   return (
-    <div className="rounded-2xl border border-border bg-card/60 p-5 transition-colors duration-300 animate-fade-in relative overflow-hidden">
-      {/* Subtle background glow */}
-      <div
-        className="absolute -top-20 -right-20 w-40 h-40 rounded-full opacity-[0.07] blur-3xl pointer-events-none"
-        style={{
-          background:
-            "radial-gradient(circle, #6366f1, #a855f7, transparent)",
-        }}
-      />
-
+    <div className="rounded-xl border border-border bg-card p-5 transition-colors duration-200 animate-fade-in">
       <div className="flex items-center gap-2 mb-4">
-        <span className="text-muted">
+        <span className="text-muted-foreground">
           <svg
             className="w-4 h-4"
             fill="none"
@@ -130,53 +110,48 @@ export default function YearProgress() {
             />
           </svg>
         </span>
-        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+        <span className="text-xs font-medium text-muted-foreground">
           {data.year} voortgang
         </span>
-        <span className="ml-auto text-[11px] text-muted font-medium tabular-nums">
+        <span className="ml-auto text-[11px] text-muted-foreground font-medium tabular-nums">
           week {data.weekNumber}
         </span>
       </div>
 
       <div className="flex items-center gap-6">
-        {/* Circle */}
         <div className="flex-shrink-0">
           {mounted ? (
             <CircleProgress percentage={data.percentage} />
           ) : (
-            <div style={{ width: 120, height: 120 }} />
+            <div style={{ width: 110, height: 110 }} />
           )}
         </div>
 
-        {/* Stats */}
         <div className="flex-1 grid grid-cols-2 gap-x-4 gap-y-3">
           <div>
-            <p className="text-2xl font-bold text-foreground/90 tabular-nums leading-none">
+            <p className="text-2xl font-bold text-foreground tabular-nums leading-none">
               {data.daysPassed}
             </p>
-            <p className="text-[11px] text-muted mt-1">dagen gehad</p>
+            <p className="text-[11px] text-muted-foreground mt-1">dagen gehad</p>
           </div>
           <div>
-            <p className="text-2xl font-bold text-foreground/90 tabular-nums leading-none">
+            <p className="text-2xl font-bold text-foreground tabular-nums leading-none">
               {data.daysRemaining}
             </p>
-            <p className="text-[11px] text-muted mt-1">dagen te gaan</p>
+            <p className="text-[11px] text-muted-foreground mt-1">dagen te gaan</p>
           </div>
           <div className="col-span-2">
-            {/* Mini bar */}
             <div className="w-full h-1.5 rounded-full bg-overlay overflow-hidden">
               <div
-                className="h-full rounded-full transition-all duration-1000 ease-out"
+                className="h-full rounded-full bg-accent transition-all duration-1000 ease-out"
                 style={{
                   width: mounted
                     ? `${Math.min(data.percentage, 100)}%`
                     : "0%",
-                  background:
-                    "linear-gradient(90deg, #6366f1, #a855f7, #ec4899)",
                 }}
               />
             </div>
-            <p className="text-[11px] text-muted mt-1.5">
+            <p className="text-[11px] text-muted-foreground mt-1.5">
               Dag {data.daysPassed} van {data.totalDays}
             </p>
           </div>

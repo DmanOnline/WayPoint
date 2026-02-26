@@ -136,7 +136,7 @@ export default function CalendarPage() {
   // Get event color from its sub-calendar
   const getEventColor = (event: CalendarEvent): string => {
     const cal = subCalendars.find((c) => c.id === event.subCalendarId);
-    return cal?.color || "#6366f1";
+    return cal?.color || "#6C63FF";
   };
 
   // Click on a day (month view) → create event

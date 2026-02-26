@@ -110,7 +110,7 @@ export async function POST(request: NextRequest) {
         userId: session.userId,
         name: name.trim(),
         description: description || null,
-        color: color || "#6366f1",
+        color: color || "#6C63FF",
         icon: icon || null,
         categoryId: categoryId || null,
         frequencyType: frequencyType || "daily",

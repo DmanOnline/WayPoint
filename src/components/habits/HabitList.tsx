@@ -82,7 +82,7 @@ export default function HabitList({
               className="w-2 h-2 rounded-full"
               style={{ backgroundColor: category.color }}
             />
-            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            <h3 className="text-xs font-semibold text-muted-foreground">
               {category.name}
             </h3>
             <span className="text-xs text-muted-foreground/50">
@@ -110,7 +110,7 @@ export default function HabitList({
           {byCategory.length > 0 && (
             <div className="flex items-center gap-2 mb-2 px-1">
               <span className="w-2 h-2 rounded-full bg-muted-foreground/30" />
-              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              <h3 className="text-xs font-semibold text-muted-foreground">
                 Overig
               </h3>
             </div>
