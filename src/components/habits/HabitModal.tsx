@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { HabitModalState, HabitFormData, HabitCategory, FrequencyType, FrequencyPeriod } from "@/lib/types/habits";
 import { toDateString } from "@/lib/habits";
 import FrequencySelector from "./FrequencySelector";
+import SmartDateInput from "@/components/ui/SmartDateInput";
 
 interface HabitModalProps {
   modalState: HabitModalState;
@@ -272,10 +273,9 @@ export default function HabitModal({
               <label className="block text-xs font-medium text-muted-foreground mb-1">
                 Startdatum
               </label>
-              <input
-                type="date"
+              <SmartDateInput
                 value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
+                onChange={setStartDate}
                 className="w-full px-3 py-2 rounded-lg border border-border bg-card text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-accent/50"
               />
             </div>

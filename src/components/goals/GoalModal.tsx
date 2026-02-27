@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { GoalCategory, GoalFormData, GoalModalState, GoalPriority } from "@/lib/types/goals";
+import SmartDateInput from "@/components/ui/SmartDateInput";
 
 interface GoalModalProps {
   modalState: GoalModalState;
@@ -181,10 +182,9 @@ export default function GoalModal({
               <label className="block text-xs font-medium text-muted-foreground mb-1">
                 Streefdatum (optioneel)
               </label>
-              <input
-                type="date"
+              <SmartDateInput
                 value={targetDate}
-                onChange={(e) => setTargetDate(e.target.value)}
+                onChange={setTargetDate}
                 className="w-full px-3 py-2 rounded-lg border border-border bg-card text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-accent/50"
               />
             </div>

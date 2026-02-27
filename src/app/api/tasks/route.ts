@@ -41,7 +41,43 @@ export async function GET(request: NextRequest) {
       orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
     });
 
-    return NextResponse.json({ tasks });
+    // Include follow-ups with due dates from People module as virtual tasks
+    const followUps = await prisma.personFollowUp.findMany({
+      where: {
+        isDone: false,
+        dueDate: { not: null },
+        person: { userId: session.userId, isArchived: false },
+      },
+      include: { person: { select: { id: true, name: true, avatarColor: true } } },
+    });
+
+    const virtualTasks = followUps.map((fu) => ({
+      id: `followup_${fu.id}`,
+      userId: session.userId,
+      projectId: null,
+      project: null,
+      title: `📋 ${fu.text} — ${fu.person.name}`,
+      description: null,
+      status: "todo",
+      priority: "medium",
+      scheduledDate: null,
+      scheduledTime: null,
+      dueDate: fu.dueDate?.toISOString() ?? null,
+      recurrenceRule: null,
+      recurrenceDay: null,
+      recurrenceEnd: null,
+      estimatedDuration: 15,
+      completedAt: null,
+      sortOrder: 999999,
+      createdAt: fu.createdAt.toISOString(),
+      updatedAt: fu.updatedAt.toISOString(),
+      _isFollowUp: true,
+      _followUpId: fu.id,
+      _personId: fu.person.id,
+      _personName: fu.person.name,
+    }));
+
+    return NextResponse.json({ tasks: [...tasks, ...virtualTasks] });
   } catch (err) {
     console.error("GET /api/tasks error:", err);
     return NextResponse.json(

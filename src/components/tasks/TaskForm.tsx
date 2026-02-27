@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { TaskFormData, TaskPriority, Project } from "@/lib/types/tasks";
 import { getDateLabel } from "@/lib/tasks";
 import RecurrenceSelector from "./RecurrenceSelector";
+import SmartDateInput from "@/components/ui/SmartDateInput";
 
 interface ConflictInfo {
   type: "calendar" | "task";
@@ -164,10 +165,9 @@ export default function TaskForm({
         <label className="block text-xs font-medium text-muted-foreground mb-1">
           Deadline
         </label>
-        <input
-          type="date"
+        <SmartDateInput
           value={formData.dueDate}
-          onChange={(e) => onChange({ dueDate: e.target.value })}
+          onChange={(v) => onChange({ dueDate: v })}
           className="w-full px-3 py-2 rounded-lg border border-border bg-card text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-accent/50"
         />
       </div>
@@ -264,12 +264,19 @@ function DateTimeSelector({
     const daysUntilSat = (6 - nextSaturday.getDay() + 7) % 7 || 7;
     nextSaturday.setDate(nextSaturday.getDate() + daysUntilSat);
 
-    return [
+    const all = [
       { label: "Vandaag", value: toDateStr(today), icon: "sun" },
       { label: "Morgen", value: toDateStr(tomorrow), icon: "sunrise" },
       { label: "Volgende week", value: toDateStr(nextMonday), icon: "calendar-next" },
       { label: "Weekend", value: toDateStr(nextSaturday), icon: "coffee" },
     ];
+    // Deduplicate — if two quick dates resolve to the same date, keep the first
+    const seen = new Set<string>();
+    return all.filter((d) => {
+      if (seen.has(d.value)) return false;
+      seen.add(d.value);
+      return true;
+    });
   }, [today]);
 
   const selectedLabel = formData.scheduledDate ? getDateLabel(formData.scheduledDate) : null;
@@ -374,13 +381,10 @@ function DateTimeSelector({
       {/* Custom date picker (expandable) */}
       {showDatePicker && (
         <div className="animate-fade-in">
-          <input
-            type="date"
+          <SmartDateInput
             value={formData.scheduledDate}
-            onChange={(e) => onChange({ scheduledDate: e.target.value })}
-            onBlur={() => setShowDatePicker(false)}
+            onChange={(v) => onChange({ scheduledDate: v })}
             className="w-full px-3 py-2 rounded-lg border border-border bg-card text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-accent/50"
-            autoFocus
           />
         </div>
       )}

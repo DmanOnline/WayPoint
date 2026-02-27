@@ -1,6 +1,7 @@
 "use client";
 
 import { TaskRecurrenceRule } from "@/lib/types/tasks";
+import SmartDateInput from "@/components/ui/SmartDateInput";
 
 interface RecurrenceSelectorProps {
   rule: TaskRecurrenceRule | null;
@@ -104,14 +105,13 @@ export default function RecurrenceSelector({
           <label className="block text-xs text-muted-foreground mb-1">
             Eindigt op (optioneel)
           </label>
-          <input
-            type="date"
+          <SmartDateInput
             value={end}
-            onChange={(e) =>
+            onChange={(v) =>
               onChange({
                 recurrenceRule: rule,
                 recurrenceDay: day,
-                recurrenceEnd: e.target.value,
+                recurrenceEnd: v,
               })
             }
             className="w-full px-3 py-2 rounded-lg border border-border bg-card text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-accent/50"

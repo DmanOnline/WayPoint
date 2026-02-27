@@ -132,6 +132,110 @@ export async function GET(request: NextRequest) {
     }
   }
 
+  // Include birthdays from People module
+  const peopleWithBirthdays = await prisma.person.findMany({
+    where: { userId: session.userId, isArchived: false, birthday: { not: null } },
+    select: { id: true, name: true, birthday: true, avatarColor: true },
+  });
+
+  for (const person of peopleWithBirthdays) {
+    if (!person.birthday) continue;
+    const bday = new Date(person.birthday);
+    const bdayMonth = bday.getMonth();
+    const bdayDay = bday.getDate();
+
+    // Check each year in the range
+    const startYear = rangeStart.getFullYear();
+    const endYear = rangeEnd.getFullYear();
+    for (let year = startYear; year <= endYear; year++) {
+      const eventDate = new Date(year, bdayMonth, bdayDay);
+      if (eventDate >= rangeStart && eventDate <= rangeEnd) {
+        const age = year - bday.getFullYear();
+        allEvents.push({
+          id: `birthday_${person.id}_${year}`,
+          userId: session.userId,
+          title: `🎂 ${person.name}${age > 0 ? ` (${age})` : ""}`,
+          description: null,
+          location: null,
+          startDate: eventDate,
+          endDate: eventDate,
+          isAllDay: true,
+          recurrenceRule: null,
+          recurrenceEnd: null,
+          parentEventId: null,
+          originalDate: null,
+          icalUid: null,
+          isLocallyModified: false,
+          isLocallyDeleted: false,
+          subCalendarId: "people",
+          subCalendar: {
+            id: "people",
+            name: "Mensen",
+            color: person.avatarColor || "#ec4899",
+            isVisible: true,
+            userId: session.userId,
+            sortOrder: 998,
+            icalUrl: null,
+            lastSyncedAt: null,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+          _isVirtual: false,
+          _isBirthday: true,
+          _personId: person.id,
+        });
+      }
+    }
+  }
+
+  // Include follow-ups with due dates from People module
+  const followUpsInRange = await prisma.personFollowUp.findMany({
+    where: {
+      isDone: false,
+      dueDate: { not: null, gte: rangeStart, lte: rangeEnd },
+      person: { userId: session.userId, isArchived: false },
+    },
+    include: { person: { select: { id: true, name: true, avatarColor: true } } },
+  });
+
+  for (const fu of followUpsInRange) {
+    if (!fu.dueDate) continue;
+    allEvents.push({
+      id: `followup_${fu.id}`,
+      userId: session.userId,
+      title: `📋 ${fu.text} — ${fu.person.name}`,
+      description: null,
+      location: null,
+      startDate: fu.dueDate,
+      endDate: fu.dueDate,
+      isAllDay: true,
+      recurrenceRule: null,
+      recurrenceEnd: null,
+      parentEventId: null,
+      originalDate: null,
+      icalUid: null,
+      isLocallyModified: false,
+      isLocallyDeleted: false,
+      subCalendarId: "people",
+      subCalendar: {
+        id: "people",
+        name: "Mensen",
+        color: fu.person.avatarColor || "#f59e0b",
+        isVisible: true,
+        userId: session.userId,
+        sortOrder: 998,
+        icalUrl: null,
+        lastSyncedAt: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      _isVirtual: false,
+      _isFollowUp: true,
+      _followUpId: fu.id,
+      _personId: fu.person.id,
+    });
+  }
+
   // Also include tasks as calendar events
   const tasksDayStart = new Date(rangeStart);
   const tasksDayEnd = new Date(rangeEnd);

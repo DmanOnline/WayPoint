@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "MyLifeSystem",
+  title: "Waypoint",
   description: "Your personal life operating system",
 };
 

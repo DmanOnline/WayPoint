@@ -38,6 +38,12 @@ export interface Task {
   sortOrder: number;
   createdAt: string;
   updatedAt: string;
+
+  // Virtual fields for people follow-ups
+  _isFollowUp?: boolean;
+  _followUpId?: string;
+  _personId?: string;
+  _personName?: string;
 }
 
 export interface ParsedTaskInput {

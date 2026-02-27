@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import {
   Task,
   TaskFormData,
@@ -28,6 +29,7 @@ const NAV_TITLES: Record<NavMode, string> = {
 };
 
 export default function TasksPage() {
+  const router = useRouter();
   const [allTasks, setAllTasks] = useState<Task[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
@@ -265,6 +267,16 @@ export default function TasksPage() {
 
   const handleToggleTask = useCallback(
     async (task: Task) => {
+      if (task._isFollowUp && task._followUpId && task._personId) {
+        // Toggle follow-up via People API
+        await fetch(`/api/people/${task._personId}/followups`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ followUpId: task._followUpId, isDone: true }),
+        });
+        await fetchTasks();
+        return;
+      }
       const newStatus = task.status === "done" ? "todo" : "done";
       await fetch(`/api/tasks/${task.id}`, {
         method: "PUT",
@@ -292,6 +304,17 @@ export default function TasksPage() {
       body: JSON.stringify({ orderedIds }),
     });
   }, []);
+
+  const handleClickTask = useCallback(
+    (task: Task) => {
+      if (task._isFollowUp && task._personId) {
+        router.push(`/people?person=${task._personId}`);
+        return;
+      }
+      setTaskModal({ open: true, mode: "edit", task });
+    },
+    [router]
+  );
 
   // --- Project actions ---
 
@@ -431,7 +454,7 @@ export default function TasksPage() {
                         <TaskCardInline
                           task={task}
                           onToggle={handleToggleTask}
-                          onClick={(t) => setTaskModal({ open: true, mode: "edit", task: t })}
+                          onClick={handleClickTask}
                         />
                       </div>
                     </div>
@@ -459,7 +482,7 @@ export default function TasksPage() {
                 <TaskList
                   tasks={filteredTasks}
                   onToggle={handleToggleTask}
-                  onClick={(task) => setTaskModal({ open: true, mode: "edit", task })}
+                  onClick={handleClickTask}
                   onReorder={handleReorder}
                   onAddClick={() => setShowQuickAdd(true)}
                 />

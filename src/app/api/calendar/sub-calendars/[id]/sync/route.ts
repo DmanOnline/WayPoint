@@ -51,6 +51,16 @@ export async function POST(
     }
 
     const icsContent = await response.text();
+
+    if (!icsContent || !icsContent.includes("BEGIN:VCALENDAR")) {
+      return NextResponse.json(
+        {
+          error: `iCal URL geeft geen geldig agenda-bestand terug. Controleer of de URL nog geldig is en de agenda gedeeld is.`,
+        },
+        { status: 502 }
+      );
+    }
+
     const parsedEvents = parseICS(icsContent);
 
     // Get ALL existing events for this sub-calendar (including deleted)

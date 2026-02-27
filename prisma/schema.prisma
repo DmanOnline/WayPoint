@@ -25,6 +25,8 @@ model User {
   notes           Note[]
   goalCategories  GoalCategory[]
   goals           Goal[]
+  journalEntries  JournalEntry[]
+  people          Person[]
 }
 
 model SubCalendar {
@@ -284,6 +286,151 @@ model GoalMilestone {
   updatedAt   DateTime  @updatedAt
 
   @@index([goalId])
+}
+
+model JournalEntry {
+  id       String   @id @default(cuid())
+  userId   String
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  date     DateTime // day stored as midnight UTC (YYYY-MM-DDT00:00:00.000Z)
+  title    String?
+  content  String   @default("")
+  mood     Int?     // 1–5: terrible, bad, okay, good, great
+  moodNote String?  // brief note explaining the mood
+  energy   Int?     // 1–5: leeg, laag, oké, goed, geladen
+  gratitude1 String? // dankbaarheid 1
+  gratitude2 String? // dankbaarheid 2
+  gratitude3 String? // dankbaarheid 3
+  tags     String?  // JSON-encoded string[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  personMentions JournalPersonMention[]
+
+  @@unique([userId, date])
+  @@index([userId, date])
+}
+
+model Person {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name        String
+  nickname    String?
+  type        String?  // friend, family, colleague, contact, romantic, mentor
+  company     String?
+  role        String?
+  email       String?
+  phone       String?
+  birthday    DateTime?
+  location    String?
+  avatarColor String   @default("#6366f1")
+  bio         String?  // vrije tekst over deze persoon
+  tags        String?  // JSON-encoded string[]
+
+  contactFrequency String?   // weekly, biweekly, monthly, quarterly, yearly
+  metAt            DateTime?
+  metThrough       String?   // hoe leren kennen: "via werk", "op een feest"
+
+  isPinned         Boolean   @default(false)
+  isArchived       Boolean   @default(false)
+  lastContactedAt  DateTime?
+
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  interactions     PersonInteraction[]
+  followUps        PersonFollowUp[]
+  lifeEvents       PersonLifeEvent[]
+  relationshipsA   PersonRelationship[] @relation("RelationshipsA")
+  relationshipsB   PersonRelationship[] @relation("RelationshipsB")
+  journalMentions  JournalPersonMention[]
+
+  @@index([userId, isArchived])
+  @@index([userId, type])
+}
+
+model PersonInteraction {
+  id       String   @id @default(cuid())
+  personId String
+  person   Person   @relation(fields: [personId], references: [id], onDelete: Cascade)
+
+  date  DateTime @default(now())
+  type  String   @default("general") // call, message, meeting, coffee, dinner, video, other
+  notes String   @default("")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([personId, date])
+}
+
+model PersonFollowUp {
+  id       String  @id @default(cuid())
+  personId String
+  person   Person  @relation(fields: [personId], references: [id], onDelete: Cascade)
+
+  text    String
+  isDone  Boolean   @default(false)
+  doneAt  DateTime?
+  dueDate DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([personId])
+}
+
+model PersonLifeEvent {
+  id          String   @id @default(cuid())
+  personId    String
+  person      Person   @relation(fields: [personId], references: [id], onDelete: Cascade)
+
+  date        DateTime
+  title       String
+  description String?
+  icon        String   @default("📌")
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([personId, date])
+}
+
+model PersonRelationship {
+  id        String @id @default(cuid())
+  personAId String
+  personA   Person @relation("RelationshipsA", fields: [personAId], references: [id], onDelete: Cascade)
+  personBId String
+  personB   Person @relation("RelationshipsB", fields: [personBId], references: [id], onDelete: Cascade)
+
+  type      String   // partner, friend, colleague, family, introduced_by
+  label     String?  // vrije tekst beschrijving
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([personAId, personBId])
+  @@index([personAId])
+  @@index([personBId])
+}
+
+model JournalPersonMention {
+  id             String       @id @default(cuid())
+  journalEntryId String
+  journalEntry   JournalEntry @relation(fields: [journalEntryId], references: [id], onDelete: Cascade)
+  personId       String
+  person         Person       @relation(fields: [personId], references: [id], onDelete: Cascade)
+
+  createdAt      DateTime     @default(now())
+
+  @@unique([journalEntryId, personId])
+  @@index([personId])
+  @@index([journalEntryId])
 }
 
 model Module {

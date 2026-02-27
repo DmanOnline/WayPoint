@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import {
   CalendarEvent,
   SubCalendar,
@@ -23,6 +24,7 @@ import EventModal from "@/components/calendar/EventModal";
 import SubCalendarModal from "@/components/calendar/SubCalendarModal";
 
 export default function CalendarPage() {
+  const router = useRouter();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [view, setView] = useState<CalendarView>("week");
   const [events, setEvents] = useState<CalendarEvent[]>([]);
@@ -158,8 +160,14 @@ export default function CalendarPage() {
     });
   };
 
-  // Click on an event → edit
+  // Click on an event → edit, or navigate for people events
   const handleClickEvent = (event: CalendarEvent) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const ev = event as any;
+    if ((ev._isBirthday || ev._isFollowUp) && ev._personId) {
+      router.push(`/people?person=${ev._personId}`);
+      return;
+    }
     setModalState({
       open: true,
       mode: "edit",
