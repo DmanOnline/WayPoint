@@ -16,6 +16,7 @@ interface JournalEditorProps {
   allEntries: JournalEntry[];
   onSaved: (entry: JournalEntry) => void;
   onDelete: (id: string) => Promise<void>;
+  onDirtyChange?: (dirty: boolean) => void;
 }
 
 type SaveStatus = "idle" | "unsaved" | "saving" | "saved" | "error";
@@ -56,7 +57,7 @@ function getInitials(name: string): string {
   return name.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2);
 }
 
-export default function JournalEditor({ date, entry, allEntries, onSaved, onDelete }: JournalEditorProps) {
+export default function JournalEditor({ date, entry, allEntries, onSaved, onDelete, onDirtyChange }: JournalEditorProps) {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [mood, setMood] = useState<number | null>(null);
@@ -127,6 +128,11 @@ export default function JournalEditor({ date, entry, allEntries, onSaved, onDele
       mentionedPersonIds: mentionedPeople.map((p) => p.id),
     };
   }, [title, content, mood, moodNote, energy, gratitude1, gratitude2, gratitude3, tags, mentionedPeople]);
+
+  // Report dirty state to parent
+  useEffect(() => {
+    onDirtyChange?.(saveStatus === "unsaved" || saveStatus === "saving");
+  }, [saveStatus, onDirtyChange]);
 
   const save = useCallback(async () => {
     if (isSaving.current) return;

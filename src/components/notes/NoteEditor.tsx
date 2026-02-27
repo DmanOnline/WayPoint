@@ -44,6 +44,7 @@ type FormatState = {
   blockquote: boolean;
   ul: boolean;
   ol: boolean;
+  taskList: boolean;
   paragraph: boolean;
   h1: boolean;
   h2: boolean;
@@ -69,6 +70,7 @@ const DEFAULT_FORMAT_STATE: FormatState = {
   blockquote: false,
   ul: false,
   ol: false,
+  taskList: false,
   paragraph: false,
   h1: false,
   h2: false,
@@ -167,6 +169,19 @@ function markdownToHtml(markdown: string): string {
       continue;
     }
 
+    if (/^- \[[ x]\] /.test(line)) {
+      const items: string[] = [];
+      while (i < lines.length) {
+        const match = lines[i].match(/^- \[([ x])\] (.*)$/);
+        if (!match) break;
+        const checked = match[1] === "x";
+        items.push(`<li class="task-item"><input type="checkbox" contenteditable="false"${checked ? " checked" : ""}>${inlineMarkdownToHtml(match[2])}</li>`);
+        i += 1;
+      }
+      blocks.push(`<ul class="task-list">${items.join("")}</ul>`);
+      continue;
+    }
+
     if (/^[-*+]\s+/.test(line)) {
       const items: string[] = [];
       while (i < lines.length) {
@@ -212,6 +227,7 @@ function inlineNodeToMarkdown(node: ChildNode): string {
   const el = node as HTMLElement;
   const tag = el.tagName.toLowerCase();
 
+  if (tag === "input") return ""; // Handled at block level (task list checkboxes)
   if (tag === "strong" || tag === "b") return `**${inlineNodesToMarkdown(Array.from(el.childNodes))}**`;
   if (tag === "em" || tag === "i") return `*${inlineNodesToMarkdown(Array.from(el.childNodes))}*`;
   if (tag === "s" || tag === "strike" || tag === "del") return `~~${inlineNodesToMarkdown(Array.from(el.childNodes))}~~`;
@@ -247,6 +263,20 @@ function blockElementToMarkdown(el: HTMLElement): string {
   }
 
   if (tag === "ul") {
+    if (el.classList.contains("task-list")) {
+      const items = Array.from(el.children)
+        .filter((child): child is HTMLElement => child.tagName.toLowerCase() === "li")
+        .map((li) => {
+          const checkbox = li.querySelector<HTMLInputElement>('input[type="checkbox"]');
+          const checked = checkbox?.checked ?? checkbox?.hasAttribute("checked") ?? false;
+          const textNodes = Array.from(li.childNodes).filter(
+            (n) => !(n instanceof HTMLElement && n.tagName.toLowerCase() === "input")
+          );
+          const text = inlineNodesToMarkdown(textNodes).trim();
+          return `- [${checked ? "x" : " "}] ${text}`;
+        });
+      return items.join("\n");
+    }
     const items = Array.from(el.children)
       .filter((child): child is HTMLElement => child.tagName.toLowerCase() === "li")
       .map((li) => `- ${nodesToMarkdown(Array.from(li.childNodes)).trim()}`);
@@ -391,6 +421,22 @@ export default function NoteEditor({
     return false;
   }, []);
 
+  const isSelectionInsideTaskList = useCallback(() => {
+    const editor = editorRef.current;
+    const selection = window.getSelection();
+    if (!editor || !selection || !selection.rangeCount) return false;
+
+    const anchorNode = selection.anchorNode;
+    if (!anchorNode || !editor.contains(anchorNode)) return false;
+
+    let current: Node | null = anchorNode.nodeType === Node.TEXT_NODE ? anchorNode.parentNode : anchorNode;
+    while (current && current !== editor) {
+      if (current instanceof HTMLUListElement && current.classList.contains("task-list")) return true;
+      current = current.parentNode;
+    }
+    return false;
+  }, []);
+
   const updateFormatState = useCallback(() => {
     const editor = editorRef.current;
     const selection = window.getSelection();
@@ -407,6 +453,7 @@ export default function NoteEditor({
     const h2 = isSelectionInsideTag("h2");
     const h3 = isSelectionInsideTag("h3");
 
+    const taskList = isSelectionInsideTaskList();
     setFormatState({
       bold: document.queryCommandState("bold"),
       italic: document.queryCommandState("italic"),
@@ -414,9 +461,10 @@ export default function NoteEditor({
       code: isSelectionInsideTag("code"),
       link: isSelectionInsideTag("a"),
       blockquote,
-      ul: document.queryCommandState("insertUnorderedList"),
+      ul: !taskList && document.queryCommandState("insertUnorderedList"),
       ol: document.queryCommandState("insertOrderedList"),
-      paragraph: !blockquote && !h1 && !h2 && !h3,
+      taskList,
+      paragraph: !blockquote && !h1 && !h2 && !h3 && !taskList,
       h1,
       h2,
       h3,
@@ -607,6 +655,24 @@ export default function NoteEditor({
     setParagraphBlock();
   }, [runEditorCommand, setParagraphBlock]);
 
+  const toggleTaskList = useCallback(() => {
+    const editor = editorRef.current;
+    if (!editor) return;
+    editor.focus();
+
+    if (isSelectionInsideTaskList()) {
+      // Exit task list: convert current item to paragraph
+      runEditorCommand("formatBlock", "<p>");
+      return;
+    }
+
+    runEditorCommand(
+      "insertHTML",
+      `<ul class="task-list"><li class="task-item"><input type="checkbox" contenteditable="false"> </li></ul><p><br></p>`
+    );
+    syncFromEditor();
+  }, [isSelectionInsideTaskList, runEditorCommand, syncFromEditor]);
+
   const performSave = useCallback(async () => {
     const draft = draftRef.current;
     if (!draft.title) return;
@@ -660,9 +726,98 @@ export default function NoteEditor({
   }, []);
 
   const handleEditorKeyDown = useCallback((e: ReactKeyboardEvent<HTMLDivElement>) => {
+    const editor = editorRef.current;
+    const selection = window.getSelection();
+
+    // --- Task list: Enter creates new task item, or exits on empty item ---
+    if (e.key === "Enter" && !e.shiftKey && editor && selection && selection.rangeCount) {
+      const anchorNode = selection.anchorNode;
+      let taskLi: HTMLLIElement | null = null;
+      let current: Node | null = anchorNode?.nodeType === Node.TEXT_NODE ? anchorNode.parentNode : anchorNode ?? null;
+      while (current && current !== editor) {
+        if (current instanceof HTMLLIElement) {
+          const parent = current.parentNode;
+          if (parent instanceof HTMLUListElement && parent.classList.contains("task-list")) {
+            taskLi = current;
+          }
+          break;
+        }
+        current = current.parentNode;
+      }
+
+      if (taskLi) {
+        e.preventDefault();
+        const textContent = normalizeText(taskLi.textContent ?? "").trim();
+
+        if (!textContent) {
+          // Empty task item → exit task list, insert paragraph
+          const taskList = taskLi.parentNode as HTMLUListElement;
+          taskLi.remove();
+          if (!taskList.children.length) taskList.remove();
+          runEditorCommand("insertParagraph");
+          syncFromEditor();
+          return;
+        }
+
+        // Non-empty → create new task item after current
+        const newLi = document.createElement("li");
+        newLi.className = "task-item";
+        const newCheckbox = document.createElement("input");
+        newCheckbox.type = "checkbox";
+        newCheckbox.contentEditable = "false";
+        newLi.appendChild(newCheckbox);
+        const spacer = document.createTextNode("\u00a0");
+        newLi.appendChild(spacer);
+        taskLi.parentNode?.insertBefore(newLi, taskLi.nextSibling);
+
+        const range = document.createRange();
+        range.setStart(spacer, 1);
+        range.collapse(true);
+        selection.removeAllRanges();
+        selection.addRange(range);
+        syncFromEditor();
+        return;
+      }
+    }
+
+    // --- Task list: Backspace on empty item exits task list ---
+    if (e.key === "Backspace" && editor && selection && selection.rangeCount && selection.isCollapsed) {
+      const range = selection.getRangeAt(0);
+      const anchorNode = range.startContainer;
+      if (editor.contains(anchorNode)) {
+        let taskLi: HTMLLIElement | null = null;
+        let current: Node | null = anchorNode.nodeType === Node.TEXT_NODE ? anchorNode.parentNode : anchorNode;
+        while (current && current !== editor) {
+          if (current instanceof HTMLLIElement) {
+            const parent = current.parentNode;
+            if (parent instanceof HTMLUListElement && parent.classList.contains("task-list")) {
+              taskLi = current;
+            }
+            break;
+          }
+          current = current.parentNode;
+        }
+
+        if (taskLi) {
+          const beforeCaret = range.cloneRange();
+          beforeCaret.selectNodeContents(taskLi);
+          beforeCaret.setEnd(range.startContainer, range.startOffset);
+          const textBefore = normalizeText(beforeCaret.toString()).trim();
+          const textContent = normalizeText(taskLi.textContent ?? "").trim();
+
+          if (!textBefore && !textContent) {
+            e.preventDefault();
+            const taskList = taskLi.parentNode as HTMLUListElement;
+            taskLi.remove();
+            if (!taskList.children.length) taskList.remove();
+            syncFromEditor();
+            return;
+          }
+        }
+      }
+    }
+
     if (e.key === "Backspace") {
-      const editor = editorRef.current;
-      const selection = window.getSelection();
       if (editor && selection && selection.rangeCount && selection.isCollapsed) {
         const range = selection.getRangeAt(0);
         const anchorNode = range.startContainer;
@@ -727,6 +882,19 @@ export default function NoteEditor({
 
   const handleEditorClick = useCallback((e: ReactMouseEvent<HTMLDivElement>) => {
     const target = e.target as HTMLElement | null;
+
+    // Toggle task list checkbox
+    if (target instanceof HTMLInputElement && target.type === "checkbox") {
+      // Sync the attribute so innerHTML serialization captures the checked state
+      if (target.checked) {
+        target.setAttribute("checked", "");
+      } else {
+        target.removeAttribute("checked");
+      }
+      syncFromEditor();
+      return;
+    }
+
     const anchor = target?.closest("a");
     if (!anchor) return;
 
@@ -736,7 +904,7 @@ export default function NoteEditor({
       if (!href) return;
       window.open(href, "_blank", "noopener,noreferrer");
     }
-  }, []);
+  }, [syncFromEditor]);
 
   const handleSave = useCallback(async () => {
     await performSave();
@@ -1134,7 +1302,10 @@ export default function NoteEditor({
                   [&_li]:mb-0.5
                   [&_blockquote]:border-l-3 [&_blockquote]:border-accent/40 [&_blockquote]:pl-3 [&_blockquote]:my-2 [&_blockquote]:text-muted-foreground [&_blockquote]:italic
                   [&_a]:text-accent [&_a]:underline [&_a]:cursor-pointer [&_a:hover]:opacity-90
-                  [&_code]:bg-surface [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-xs [&_code]:font-mono"
+                  [&_code]:bg-surface [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-xs [&_code]:font-mono
+                  [&_.task-list]:list-none [&_.task-list]:pl-0 [&_.task-list]:mb-2
+                  [&_.task-item]:flex [&_.task-item]:items-baseline [&_.task-item]:gap-2 [&_.task-item]:mb-1
+                  [&_.task-item_input]:w-3.5 [&_.task-item_input]:h-3.5 [&_.task-item_input]:cursor-pointer [&_.task-item_input]:accent-accent [&_.task-item_input]:shrink-0"
               />
             </div>
           </div>
@@ -1227,6 +1398,21 @@ export default function NoteEditor({
                 >
                   <span className="font-mono text-[10px]">1.</span>
                   <span>Lijst</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={toggleTaskList}
+                  className={toolbarButtonClass(formatState.taskList)}
+                  title="Takenlijst (checkbox)"
+                >
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <rect x="3" y="5" width="6" height="6" rx="1" />
+                    <path d="m4.5 8 2 2 3-3" />
+                    <rect x="3" y="14" width="6" height="6" rx="1" />
+                    <line x1="15" y1="8" x2="21" y2="8" />
+                    <line x1="15" y1="17" x2="21" y2="17" />
+                  </svg>
+                  <span>Taken</span>
                 </button>
               </div>
 

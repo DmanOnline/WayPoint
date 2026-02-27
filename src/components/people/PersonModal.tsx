@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Person, PersonFormData, PERSON_TYPES, CONTACT_FREQUENCIES } from "@/lib/types/people";
 import SmartDateInput from "@/components/ui/SmartDateInput";
 
@@ -35,27 +35,68 @@ export default function PersonModal({ open, person, onClose, onSave, onDelete }:
   const [tagInput, setTagInput] = useState("");
   const [saving, setSaving] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
+  const [showUnsavedConfirm, setShowUnsavedConfirm] = useState(false);
+  const initialRef = useRef<{ name: string; nickname: string; type: string; company: string; role: string; email: string; phone: string; location: string; birthday: string; contactFrequency: string; metAt: string; metThrough: string; avatarColor: string; tags: string[] } | null>(null);
 
   useEffect(() => {
     if (open) {
-      setName(person?.name ?? "");
-      setNickname(person?.nickname ?? "");
-      setType(person?.type ?? "");
-      setCompany(person?.company ?? "");
-      setRole(person?.role ?? "");
-      setEmail(person?.email ?? "");
-      setPhone(person?.phone ?? "");
-      setLocation(person?.location ?? "");
-      setBirthday(person?.birthday ? person.birthday.slice(0, 10) : "");
-      setContactFrequency(person?.contactFrequency ?? "");
-      setMetAt(person?.metAt ? person.metAt.slice(0, 10) : "");
-      setMetThrough(person?.metThrough ?? "");
-      setAvatarColor(person?.avatarColor ?? AVATAR_COLORS[0]);
-      setTags(person?.tags ?? []);
+      const initial = {
+        name: person?.name ?? "",
+        nickname: person?.nickname ?? "",
+        type: person?.type ?? "",
+        company: person?.company ?? "",
+        role: person?.role ?? "",
+        email: person?.email ?? "",
+        phone: person?.phone ?? "",
+        location: person?.location ?? "",
+        birthday: person?.birthday ? person.birthday.slice(0, 10) : "",
+        contactFrequency: person?.contactFrequency ?? "",
+        metAt: person?.metAt ? person.metAt.slice(0, 10) : "",
+        metThrough: person?.metThrough ?? "",
+        avatarColor: person?.avatarColor ?? AVATAR_COLORS[0],
+        tags: person?.tags ?? [],
+      };
+      initialRef.current = initial;
+      setName(initial.name);
+      setNickname(initial.nickname);
+      setType(initial.type);
+      setCompany(initial.company);
+      setRole(initial.role);
+      setEmail(initial.email);
+      setPhone(initial.phone);
+      setLocation(initial.location);
+      setBirthday(initial.birthday);
+      setContactFrequency(initial.contactFrequency);
+      setMetAt(initial.metAt);
+      setMetThrough(initial.metThrough);
+      setAvatarColor(initial.avatarColor);
+      setTags(initial.tags);
       setTagInput("");
       setShowDelete(false);
+      setShowUnsavedConfirm(false);
     }
   }, [open, person]);
+
+  const isFormDirty = () => {
+    const i = initialRef.current;
+    if (!i) return false;
+    return (
+      name !== i.name || nickname !== i.nickname || type !== i.type ||
+      company !== i.company || role !== i.role || email !== i.email ||
+      phone !== i.phone || location !== i.location || birthday !== i.birthday ||
+      contactFrequency !== i.contactFrequency || metAt !== i.metAt ||
+      metThrough !== i.metThrough || avatarColor !== i.avatarColor ||
+      JSON.stringify(tags) !== JSON.stringify(i.tags)
+    );
+  };
+
+  const handleClose = () => {
+    if (isFormDirty()) {
+      setShowUnsavedConfirm(true);
+      return;
+    }
+    onClose();
+  };
 
   if (!open) return null;
 
@@ -88,7 +129,7 @@ export default function PersonModal({ open, person, onClose, onSave, onDelete }:
       <div className="bg-surface border border-border rounded-2xl w-full max-w-md shadow-2xl">
         <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-border">
           <h2 className="font-semibold text-foreground">{isEdit ? "Persoon bewerken" : "Persoon toevoegen"}</h2>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors">
+          <button onClick={handleClose} className="text-muted-foreground hover:text-foreground transition-colors">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
             </svg>
@@ -275,7 +316,7 @@ export default function PersonModal({ open, person, onClose, onSave, onDelete }:
           ) : <div />}
 
           <div className="flex gap-2">
-            <button onClick={onClose} className="px-4 py-2 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-surface-hover transition-colors">
+            <button onClick={handleClose} className="px-4 py-2 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-surface-hover transition-colors">
               Annuleren
             </button>
             <button onClick={handleSave} disabled={!name.trim() || saving}
@@ -285,6 +326,31 @@ export default function PersonModal({ open, person, onClose, onSave, onDelete }:
           </div>
         </div>
       </div>
+
+      {showUnsavedConfirm && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50">
+          <div className="bg-surface border border-border rounded-2xl p-6 max-w-sm w-full mx-4 shadow-2xl">
+            <h3 className="font-semibold text-foreground mb-2">Niet-opgeslagen wijzigingen</h3>
+            <p className="text-sm text-muted-foreground mb-5">
+              Je hebt wijzigingen die nog niet zijn opgeslagen. Wil je ze weggooien?
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setShowUnsavedConfirm(false)}
+                className="px-4 py-2 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-surface-hover transition-colors"
+              >
+                Terug
+              </button>
+              <button
+                onClick={() => { setShowUnsavedConfirm(false); onClose(); }}
+                className="px-4 py-2 rounded-lg text-sm bg-red-500 text-white hover:bg-red-600 transition-colors"
+              >
+                Weggooien
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

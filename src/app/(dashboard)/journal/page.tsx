@@ -13,6 +13,8 @@ export default function JournalPage() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [nav, setNav] = useState<JournalNav>("today");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isDirty, setIsDirty] = useState(false);
+  const [unsavedDialog, setUnsavedDialog] = useState<{ open: boolean; action: (() => void) | null }>({ open: false, action: null });
 
   const fetchEntries = useCallback(async () => {
     try {
@@ -55,9 +57,20 @@ export default function JournalPage() {
     setEntries((prev) => prev.filter((e) => e.id !== id));
   };
 
+  const guardNav = (action: () => void) => {
+    if (isDirty) {
+      setUnsavedDialog({ open: true, action });
+      return;
+    }
+    action();
+  };
+
   const handleSelectDate = (date: Date) => {
-    setSelectedDate(date);
-    setNav("today");
+    guardNav(() => { setSelectedDate(date); setNav("today"); });
+  };
+
+  const handleNavChange = (newNav: JournalNav) => {
+    guardNav(() => setNav(newNav));
   };
 
   if (loading) {
@@ -77,7 +90,7 @@ export default function JournalPage() {
         entries={entries}
         activeNav={nav}
         selectedDate={selectedDate}
-        onSelectNav={setNav}
+        onSelectNav={handleNavChange}
         onSelectDate={handleSelectDate}
         mobileOpen={sidebarOpen}
         onMobileClose={() => setSidebarOpen(false)}
@@ -105,6 +118,7 @@ export default function JournalPage() {
             allEntries={entries}
             onSaved={handleSaved}
             onDelete={handleDelete}
+            onDirtyChange={setIsDirty}
           />
         )}
 
@@ -126,6 +140,36 @@ export default function JournalPage() {
           </div>
         )}
       </div>
+
+      {unsavedDialog.open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-surface border border-border rounded-2xl p-6 max-w-sm w-full mx-4 shadow-2xl">
+            <h3 className="font-semibold text-foreground mb-2">Niet-opgeslagen wijzigingen</h3>
+            <p className="text-sm text-muted-foreground mb-5">
+              Je hebt wijzigingen die nog niet zijn opgeslagen. Wil je toch doorgaan? Autosave slaat ze alsnog op.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setUnsavedDialog({ open: false, action: null })}
+                className="px-4 py-2 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-surface-hover transition-colors"
+              >
+                Blijf hier
+              </button>
+              <button
+                onClick={() => {
+                  const action = unsavedDialog.action;
+                  setUnsavedDialog({ open: false, action: null });
+                  setIsDirty(false);
+                  action?.();
+                }}
+                className="px-4 py-2 rounded-lg text-sm bg-accent text-white hover:bg-accent/90 transition-colors"
+              >
+                Doorgaan
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
