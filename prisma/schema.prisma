@@ -27,6 +27,13 @@ model User {
   goals           Goal[]
   journalEntries  JournalEntry[]
   people          Person[]
+
+  financeAccounts        FinanceAccount[]
+  financeCategoryGroups  FinanceCategoryGroup[]
+  financeCategories      FinanceCategory[]
+  financeMonthlyBudgets  FinanceMonthlyBudget[]
+  financeTransactions    FinanceTransaction[]
+  financeCategoryTargets FinanceCategoryTarget[]
 }
 
 model SubCalendar {
@@ -445,4 +452,130 @@ model Module {
   sortOrder   Int      @default(0)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+// ─── Finance (YNAB-stijl envelope budgeting) ─────────────────────────
+
+model FinanceAccount {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name         String
+  type         String   @default("checking") // checking, savings, cash, credit_card
+  group        String   @default("cash")     // cash, loans, tracking
+  onBudget     Boolean  @default(true)       // cash = true, loans/tracking = false
+  startBalance Int      @default(0)          // in centen
+  currency     String   @default("EUR")
+  color        String   @default("#6366f1")
+  sortOrder    Int      @default(0)
+  isArchived   Boolean  @default(false)
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  transactions FinanceTransaction[]
+
+  @@unique([userId, name])
+  @@index([userId, isArchived])
+}
+
+model FinanceCategoryGroup {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name      String
+  sortOrder Int      @default(0)
+  isHidden  Boolean  @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  categories FinanceCategory[]
+
+  @@unique([userId, name])
+  @@index([userId])
+}
+
+model FinanceCategory {
+  id        String               @id @default(cuid())
+  userId    String
+  user      User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  groupId   String
+  group     FinanceCategoryGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  name      String
+  sortOrder Int      @default(0)
+  isHidden  Boolean  @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  budgets      FinanceMonthlyBudget[]
+  transactions FinanceTransaction[]
+  target       FinanceCategoryTarget?
+
+  @@unique([groupId, name])
+  @@index([userId])
+}
+
+model FinanceMonthlyBudget {
+  id         String          @id @default(cuid())
+  userId     String
+  user       User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  categoryId String
+  category   FinanceCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  month      String          // "2026-02"
+  assigned   Int             @default(0) // in centen
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([categoryId, month])
+  @@index([userId, month])
+}
+
+model FinanceCategoryTarget {
+  id         String          @id @default(cuid())
+  userId     String
+  user       User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  categoryId String          @unique
+  category   FinanceCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  type       String          // "monthly" | "weekly" | "yearly" | "custom"
+  amount     Int             // target bedrag in centen
+  dayOfMonth Int?            // 1-31, null = einde periode
+  refillType String          @default("refill") // "refill" | "set_aside"
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model FinanceTransaction {
+  id         String           @id @default(cuid())
+  userId     String
+  user       User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accountId  String
+  account    FinanceAccount   @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  categoryId String?
+  category   FinanceCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  date       DateTime
+  payee      String?
+  memo       String?
+  amount     Int              // in centen; positief = inflow, negatief = outflow
+  isCleared  Boolean          @default(false)
+
+  transferAccountId String?   // andere kant van een transfer
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([userId, date])
+  @@index([accountId])
+  @@index([categoryId])
 }
