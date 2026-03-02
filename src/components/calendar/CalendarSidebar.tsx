@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { SubCalendar } from "@/lib/types/calendar";
+import { EVENT_COLORS } from "@/lib/calendar";
 
 interface CalendarSidebarProps {
   subCalendars: SubCalendar[];
@@ -13,6 +14,10 @@ interface CalendarSidebarProps {
   onSyncCalendar: (id: string) => void;
   onExportCalendar: (id: string) => void;
   syncingIds: Set<string>;
+  isPeopleVisible: boolean;
+  onTogglePeople: () => void;
+  peopleColor: string;
+  onPeopleColorChange: (color: string) => void;
   mobileOpen?: boolean;
   onMobileClose?: () => void;
 }
@@ -27,6 +32,10 @@ export default function CalendarSidebar({
   onSyncCalendar,
   onExportCalendar,
   syncingIds,
+  isPeopleVisible,
+  onTogglePeople,
+  peopleColor,
+  onPeopleColorChange,
   mobileOpen = false,
   onMobileClose,
 }: CalendarSidebarProps) {
@@ -95,6 +104,21 @@ export default function CalendarSidebar({
         </div>
       )}
 
+      {/* Module calendars */}
+      <div>
+        <h3 className="text-xs font-semibold text-muted-foreground mb-2">
+          Modules
+        </h3>
+        <div className="space-y-1">
+          <PeopleCalendarItem
+            isVisible={isPeopleVisible}
+            onToggle={onTogglePeople}
+            color={peopleColor}
+            onColorChange={onPeopleColorChange}
+          />
+        </div>
+      </div>
+
       <button
         onClick={onLinkIcal}
         className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors px-1"
@@ -106,6 +130,77 @@ export default function CalendarSidebar({
       </button>
     </div>
     </>
+  );
+}
+
+function PeopleCalendarItem({
+  isVisible,
+  onToggle,
+  color,
+  onColorChange,
+}: {
+  isVisible: boolean;
+  onToggle: () => void;
+  color: string;
+  onColorChange: (color: string) => void;
+}) {
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  return (
+    <div className="flex items-center gap-2 py-1 px-1 rounded-md hover:bg-overlay group relative">
+      {/* Colored checkbox */}
+      <button
+        onClick={onToggle}
+        className="w-4 h-4 rounded border-2 shrink-0 flex items-center justify-center transition-colors"
+        style={{
+          borderColor: color,
+          backgroundColor: isVisible ? color : "transparent",
+        }}
+      >
+        {isVisible && (
+          <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+          </svg>
+        )}
+      </button>
+
+      {/* Name */}
+      <span className={`text-sm flex-1 truncate ${isVisible ? "text-foreground" : "text-muted-foreground"}`}>
+        Mensen
+      </span>
+
+      {/* Color menu button */}
+      <button
+        onClick={() => setMenuOpen(!menuOpen)}
+        className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded hover:bg-overlay"
+        title="Kleur wijzigen"
+      >
+        <svg className="w-3.5 h-3.5 text-muted-foreground" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM12.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM18.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
+        </svg>
+      </button>
+
+      {/* Color picker popover */}
+      {menuOpen && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />
+          <div className="absolute right-0 top-full mt-1 z-50 bg-card border border-border rounded-lg shadow-xl p-2 w-[152px]">
+            <p className="text-[10px] font-medium text-muted-foreground mb-2 px-1">Kleur</p>
+            <div className="grid grid-cols-6 gap-1">
+              {EVENT_COLORS.map((c) => (
+                <button
+                  key={c.value}
+                  onClick={() => { onColorChange(c.value); setMenuOpen(false); }}
+                  className={`w-5 h-5 rounded-full transition-all hover:scale-110 ${color === c.value ? "ring-2 ring-offset-1 ring-offset-card ring-accent scale-110" : ""}`}
+                  style={{ backgroundColor: c.value }}
+                  title={c.label}
+                />
+              ))}
+            </div>
+          </div>
+        </>
+      )}
+    </div>
   );
 }
 

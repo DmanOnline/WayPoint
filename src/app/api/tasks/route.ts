@@ -35,6 +35,15 @@ export async function GET(request: NextRequest) {
       ];
     }
 
+    // Auto-cleanup: delete tasks completed more than 7 days ago
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    await prisma.task.deleteMany({
+      where: {
+        userId: session.userId,
+        completedAt: { lt: sevenDaysAgo },
+      },
+    });
+
     const tasks = await prisma.task.findMany({
       where,
       include: { project: true },
@@ -67,6 +76,7 @@ export async function GET(request: NextRequest) {
       recurrenceDay: null,
       recurrenceEnd: null,
       estimatedDuration: 15,
+      checklistItems: [],
       completedAt: null,
       sortOrder: 999999,
       createdAt: fu.createdAt.toISOString(),
@@ -109,6 +119,7 @@ export async function POST(request: NextRequest) {
       recurrenceDay,
       recurrenceEnd,
       estimatedDuration,
+      checklistItems,
     } = body;
 
     if (!title || !title.trim()) {
@@ -152,6 +163,7 @@ export async function POST(request: NextRequest) {
         recurrenceDay: recurrenceDay ?? null,
         recurrenceEnd: recurrenceEnd ? new Date(recurrenceEnd) : null,
         estimatedDuration: estimatedDuration || 60,
+        checklistItems: checklistItems ?? [],
         sortOrder: (maxSort._max.sortOrder ?? 0) + 1,
       },
       include: { project: true },

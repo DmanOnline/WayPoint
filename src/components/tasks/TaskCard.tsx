@@ -107,7 +107,7 @@ export default function TaskCard({
         )}
 
         {/* Meta tags */}
-        {!isDone && !completing && (scheduledInfo.label || dueInfo.label || recurrenceLabel) && (
+        {!isDone && !completing && (scheduledInfo.label || dueInfo.label || recurrenceLabel || task.checklistItems?.length > 0) && (
           <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-1">
             {scheduledInfo.label && (
               <span className={`inline-flex items-center gap-1 text-xs ${
@@ -140,6 +140,15 @@ export default function TaskCard({
                   <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10" />
                 </svg>
                 {recurrenceLabel}
+              </span>
+            )}
+            {task.checklistItems?.length > 0 && (
+              <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <polyline points="9 11 12 14 22 4" />
+                  <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+                </svg>
+                {task.checklistItems.filter((i) => i.done).length}/{task.checklistItems.length}
               </span>
             )}
           </div>

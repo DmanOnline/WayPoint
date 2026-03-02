@@ -2,6 +2,12 @@ export type TaskStatus = "todo" | "in_progress" | "done";
 export type TaskPriority = "low" | "medium" | "high";
 export type TaskRecurrenceRule = "DAILY" | "WEEKLY" | "MONTHLY" | "YEARLY";
 
+export interface ChecklistItem {
+  id: string;
+  text: string;
+  done: boolean;
+}
+
 export interface Project {
   id: string;
   userId: string;
@@ -33,6 +39,7 @@ export interface Task {
   recurrenceEnd: string | null;
 
   estimatedDuration: number; // in minutes, default 60
+  checklistItems: ChecklistItem[];
 
   completedAt: string | null;
   sortOrder: number;
@@ -82,4 +89,33 @@ export interface TaskFormData {
   recurrenceDay: number | null;
   recurrenceEnd: string;
   estimatedDuration: number;
+  checklistItems: ChecklistItem[];
+}
+
+export interface WeeklyDataPoint {
+  week: string;
+  created: number;
+  completed: number;
+}
+
+export interface ProjectStat {
+  projectId: string;
+  name: string;
+  color: string;
+  open: number;
+  done: number;
+}
+
+export interface PriorityStat {
+  priority: TaskPriority;
+  open: number;
+  done: number;
+}
+
+export interface TaskInsights {
+  streak: number;
+  completionRateThisWeek: number; // percentage 0-100
+  weeklyData: WeeklyDataPoint[];
+  projectBreakdown: ProjectStat[];
+  priorityBreakdown: PriorityStat[];
 }

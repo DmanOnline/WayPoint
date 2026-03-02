@@ -14,6 +14,10 @@ interface ParsedEvent {
 
 /**
  * Parse an iCal (.ics) string into an array of event objects.
+ * Events with RECURRENCE-ID are skipped — these are exception instances of a
+ * recurring event (e.g. a rescheduled occurrence). Our system doesn't support
+ * per-occurrence overrides, so we rely on the master RRULE instead.
+ * UIDs are deduplicated as a safety net.
  */
 export function parseICS(icsString: string): ParsedEvent[] {
   const events: ParsedEvent[] = [];
@@ -24,12 +28,14 @@ export function parseICS(icsString: string): ParsedEvent[] {
 
   let inEvent = false;
   let currentEvent: Partial<ParsedEvent> = {};
+  let isExceptionInstance = false;
 
   for (const line of lines) {
     const trimmed = line.trim();
 
     if (trimmed === "BEGIN:VEVENT") {
       inEvent = true;
+      isExceptionInstance = false;
       currentEvent = {
         uid: "",
         title: "",
@@ -44,7 +50,7 @@ export function parseICS(icsString: string): ParsedEvent[] {
 
     if (trimmed === "END:VEVENT") {
       inEvent = false;
-      if (currentEvent.uid && currentEvent.startDate) {
+      if (!isExceptionInstance && currentEvent.uid && currentEvent.startDate) {
         // If no end date, default to start date + 1 hour (or same day for all-day)
         if (!currentEvent.endDate) {
           currentEvent.endDate = currentEvent.isAllDay
@@ -71,6 +77,10 @@ export function parseICS(icsString: string): ParsedEvent[] {
     switch (propName) {
       case "UID":
         currentEvent.uid = value;
+        break;
+      case "RECURRENCE-ID":
+        // This VEVENT is an exception instance of a recurring event — skip it
+        isExceptionInstance = true;
         break;
       case "SUMMARY":
         currentEvent.title = unescapeICalValue(value);
@@ -114,7 +124,13 @@ export function parseICS(icsString: string): ParsedEvent[] {
     }
   }
 
-  return events;
+  // Deduplicate by UID as a safety net (keep first occurrence = master event)
+  const seen = new Set<string>();
+  return events.filter((e) => {
+    if (seen.has(e.uid)) return false;
+    seen.add(e.uid);
+    return true;
+  });
 }
 
 /**

@@ -126,6 +126,7 @@ model Task {
   recurrenceEnd     DateTime?
 
   estimatedDuration Int       @default(60)
+  checklistItems    Json?
 
   completedAt       DateTime?
   sortOrder      Int       @default(0)

@@ -57,6 +57,7 @@ export async function PUT(
   if (body.recurrenceEnd !== undefined)
     data.recurrenceEnd = body.recurrenceEnd ? new Date(body.recurrenceEnd) : null;
   if (body.estimatedDuration !== undefined) data.estimatedDuration = body.estimatedDuration;
+  if (body.checklistItems !== undefined) data.checklistItems = body.checklistItems;
 
   // Handle status change
   if (body.status !== undefined) {

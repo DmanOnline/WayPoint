@@ -71,9 +71,22 @@ export async function POST(
       },
     });
 
-    const existingByUid = new Map(
-      existingEvents.map((e) => [e.icalUid, e])
-    );
+    // Deduplicate existing DB records by UID — keep one, delete the rest.
+    // This cleans up duplicates that were previously created from RECURRENCE-ID events.
+    const existingByUid = new Map<string, typeof existingEvents[0]>();
+    const duplicateIds: string[] = [];
+    for (const e of existingEvents) {
+      if (!e.icalUid) continue;
+      if (existingByUid.has(e.icalUid)) {
+        duplicateIds.push(e.id);
+      } else {
+        existingByUid.set(e.icalUid, e);
+      }
+    }
+    if (duplicateIds.length > 0) {
+      await prisma.calendarEvent.deleteMany({ where: { id: { in: duplicateIds } } });
+    }
+
     const feedUids = new Set(parsedEvents.map((e) => e.uid));
 
     // Build a set of locally deleted event signatures (title + startDate)

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Task, TaskFormData, TaskModalState, Project } from "@/lib/types/tasks";
 import { getSmartDefaultDate } from "@/lib/tasks";
 import TaskForm from "./TaskForm";
@@ -12,6 +12,8 @@ interface TaskModalProps {
   onSave: (data: TaskFormData) => Promise<void>;
   onDelete: (task: Task) => Promise<void>;
 }
+
+type AutoSaveStatus = "idle" | "saving" | "saved" | "error";
 
 function toDateStr(d: string | null): string {
   if (!d) return "";
@@ -39,11 +41,25 @@ export default function TaskModal({
     recurrenceDay: null,
     recurrenceEnd: "",
     estimatedDuration: 60,
+    checklistItems: [],
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [autoSaveStatus, setAutoSaveStatus] = useState<AutoSaveStatus>("idle");
 
+  // Refs to avoid stale closures and track user edits
+  const onSaveRef = useRef(onSave);
+  useEffect(() => { onSaveRef.current = onSave; }, [onSave]);
+
+  const hasUserEditedRef = useRef(false);
+  const savedTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Initialize form when modal opens
   useEffect(() => {
+    hasUserEditedRef.current = false;
+    setAutoSaveStatus("idle");
+    if (savedTimerRef.current) clearTimeout(savedTimerRef.current);
+
     if (open && mode === "edit" && task) {
       setFormData({
         title: task.title,
@@ -57,6 +73,7 @@ export default function TaskModal({
         recurrenceDay: task.recurrenceDay,
         recurrenceEnd: task.recurrenceEnd ? toDateStr(task.recurrenceEnd) : "",
         estimatedDuration: task.estimatedDuration || 60,
+        checklistItems: task.checklistItems ?? [],
       });
     } else if (open && mode === "create") {
       setFormData({
@@ -71,16 +88,38 @@ export default function TaskModal({
         recurrenceDay: null,
         recurrenceEnd: "",
         estimatedDuration: 60,
+        checklistItems: [],
       });
     }
     setIsSubmitting(false);
     setError("");
   }, [open, mode, task]);
 
+  // Auto-save in edit mode (debounced 800ms after last change)
+  useEffect(() => {
+    if (!open || mode !== "edit" || !hasUserEditedRef.current) return;
+
+    setAutoSaveStatus("saving");
+    const timer = setTimeout(async () => {
+      try {
+        await onSaveRef.current(formData);
+        setAutoSaveStatus("saved");
+        if (savedTimerRef.current) clearTimeout(savedTimerRef.current);
+        savedTimerRef.current = setTimeout(() => setAutoSaveStatus("idle"), 2000);
+      } catch {
+        setAutoSaveStatus("error");
+      }
+    }, 800);
+
+    return () => clearTimeout(timer);
+  }, [formData, open, mode]);
+
   const handleChange = useCallback((partial: Partial<TaskFormData>) => {
+    hasUserEditedRef.current = true;
     setFormData((prev) => ({ ...prev, ...partial }));
   }, []);
 
+  // Used only in create mode
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
@@ -131,21 +170,28 @@ export default function TaskModal({
         >
           {/* Header */}
           <div className="flex items-center justify-between px-5 py-4 border-b border-border">
-            <h2 className="text-base font-semibold text-foreground">
-              {mode === "edit" ? "Taak bewerken" : "Nieuwe taak"}
-            </h2>
+            <div className="flex items-center gap-3">
+              <h2 className="text-base font-semibold text-foreground">
+                {mode === "edit" ? "Taak bewerken" : "Nieuwe taak"}
+              </h2>
+              {/* Auto-save status */}
+              {mode === "edit" && autoSaveStatus !== "idle" && (
+                <span className={`text-xs transition-all ${
+                  autoSaveStatus === "saving" ? "text-muted-foreground/60" :
+                  autoSaveStatus === "saved" ? "text-positive" :
+                  "text-red-400"
+                }`}>
+                  {autoSaveStatus === "saving" && "Opslaan..."}
+                  {autoSaveStatus === "saved" && "✓ Opgeslagen"}
+                  {autoSaveStatus === "error" && "Fout bij opslaan"}
+                </span>
+              )}
+            </div>
             <button
               onClick={onClose}
               className="text-muted-foreground hover:text-foreground transition-colors"
             >
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <line x1="18" y1="6" x2="6" y2="18" />
                 <line x1="6" y1="6" x2="18" y2="18" />
               </svg>

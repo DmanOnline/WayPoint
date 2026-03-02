@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import { TaskFormData, TaskPriority, Project } from "@/lib/types/tasks";
+import { TaskFormData, TaskPriority, Project, ChecklistItem } from "@/lib/types/tasks";
 import { getDateLabel } from "@/lib/tasks";
 import RecurrenceSelector from "./RecurrenceSelector";
 import SmartDateInput from "@/components/ui/SmartDateInput";
@@ -194,33 +194,149 @@ export default function TaskForm({
         />
       </div>
 
+      {/* Checklist */}
+      <ChecklistEditor
+        items={formData.checklistItems}
+        onChange={(items) => onChange({ checklistItems: items })}
+      />
+
       {/* Actions */}
       <div className="flex items-center gap-2 pt-2">
-        <button
-          type="submit"
-          disabled={isSubmitting || !formData.title.trim()}
-          className="flex-1 py-2.5 rounded-lg bg-accent text-white text-sm font-medium hover:bg-accent/90 disabled:opacity-50 transition-all"
-        >
-          {isSubmitting ? "Opslaan..." : isEditing ? "Opslaan" : "Aanmaken"}
-        </button>
-        <button
-          type="button"
-          onClick={onCancel}
-          className="px-4 py-2.5 rounded-lg border border-border text-muted-foreground text-sm hover:bg-surface-hover transition-all"
-        >
-          Annuleren
-        </button>
-        {isEditing && onDelete && (
-          <button
-            type="button"
-            onClick={onDelete}
-            className="px-4 py-2.5 rounded-lg text-red-400 text-sm hover:bg-red-500/10 transition-all"
-          >
-            Verwijderen
-          </button>
+        {isEditing ? (
+          // Edit mode: auto-save handles saving, just show Sluiten + Verwijderen
+          <>
+            <button
+              type="button"
+              onClick={onCancel}
+              className="flex-1 py-2.5 rounded-lg bg-accent text-white text-sm font-medium hover:bg-accent/90 transition-all"
+            >
+              Sluiten
+            </button>
+            {onDelete && (
+              <button
+                type="button"
+                onClick={onDelete}
+                disabled={isSubmitting}
+                className="px-4 py-2.5 rounded-lg text-red-400 text-sm hover:bg-red-500/10 disabled:opacity-50 transition-all"
+              >
+                {isSubmitting ? "..." : "Verwijderen"}
+              </button>
+            )}
+          </>
+        ) : (
+          // Create mode: explicit submit
+          <>
+            <button
+              type="submit"
+              disabled={isSubmitting || !formData.title.trim()}
+              className="flex-1 py-2.5 rounded-lg bg-accent text-white text-sm font-medium hover:bg-accent/90 disabled:opacity-50 transition-all"
+            >
+              {isSubmitting ? "Aanmaken..." : "Aanmaken"}
+            </button>
+            <button
+              type="button"
+              onClick={onCancel}
+              className="px-4 py-2.5 rounded-lg border border-border text-muted-foreground text-sm hover:bg-surface-hover transition-all"
+            >
+              Annuleren
+            </button>
+          </>
         )}
       </div>
     </form>
+  );
+}
+
+// --- Checklist editor ---
+
+function ChecklistEditor({
+  items,
+  onChange,
+}: {
+  items: ChecklistItem[];
+  onChange: (items: ChecklistItem[]) => void;
+}) {
+  const [input, setInput] = useState("");
+
+  function addItem() {
+    const text = input.trim();
+    if (!text) return;
+    onChange([
+      ...items,
+      { id: Date.now().toString(), text, done: false },
+    ]);
+    setInput("");
+  }
+
+  function toggleItem(id: string) {
+    onChange(items.map((item) => item.id === id ? { ...item, done: !item.done } : item));
+  }
+
+  function removeItem(id: string) {
+    onChange(items.filter((item) => item.id !== id));
+  }
+
+  return (
+    <div>
+      <label className="block text-xs font-medium text-muted-foreground mb-2">
+        Checklist
+      </label>
+
+      {items.length > 0 && (
+        <ul className="space-y-1 mb-2">
+          {items.map((item) => (
+            <li key={item.id} className="flex items-center gap-2 group">
+              <button
+                type="button"
+                onClick={() => toggleItem(item.id)}
+                className={`w-4 h-4 rounded border flex-shrink-0 flex items-center justify-center transition-all ${
+                  item.done
+                    ? "bg-accent border-accent text-white"
+                    : "border-border bg-surface hover:border-accent/50"
+                }`}
+              >
+                {item.done && (
+                  <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="2 6 5 9 10 3" />
+                  </svg>
+                )}
+              </button>
+              <span className={`flex-1 text-sm ${item.done ? "line-through text-muted-foreground/50" : "text-foreground"}`}>
+                {item.text}
+              </span>
+              <button
+                type="button"
+                onClick={() => removeItem(item.id)}
+                className="opacity-0 group-hover:opacity-100 text-muted-foreground/40 hover:text-red-400 transition-all"
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <div className="flex gap-2">
+        <input
+          type="text"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addItem(); } }}
+          placeholder="Item toevoegen..."
+          className="flex-1 px-3 py-1.5 rounded-lg border border-border bg-card text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-accent/50"
+        />
+        <button
+          type="button"
+          onClick={addItem}
+          disabled={!input.trim()}
+          className="px-3 py-1.5 rounded-lg border border-border text-muted-foreground text-sm hover:bg-surface-hover disabled:opacity-40 transition-all"
+        >
+          +
+        </button>
+      </div>
+    </div>
   );
 }
 

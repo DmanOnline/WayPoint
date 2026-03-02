@@ -33,6 +33,19 @@ export default function CalendarPage() {
   const [loading, setLoading] = useState(true);
   const [zoomLevel, setZoomLevel] = useState(40);
   const [calSidebarOpen, setCalSidebarOpen] = useState(false);
+  const [isPeopleVisible, setIsPeopleVisible] = useState(true);
+  const [peopleColor, setPeopleColor] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("calendar_people_color") || "#ec4899";
+    }
+    return "#ec4899";
+  });
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const handlePeopleColorChange = (color: string) => {
+    setPeopleColor(color);
+    localStorage.setItem("calendar_people_color", color);
+  };
 
   const [modalState, setModalState] = useState<ModalState>({
     open: false,
@@ -137,6 +150,7 @@ export default function CalendarPage() {
 
   // Get event color from its sub-calendar
   const getEventColor = (event: CalendarEvent): string => {
+    if (event.subCalendarId === "people") return peopleColor;
     const cal = subCalendars.find((c) => c.id === event.subCalendarId);
     return cal?.color || "#6C63FF";
   };
@@ -162,10 +176,8 @@ export default function CalendarPage() {
 
   // Click on an event → edit, or navigate for people events
   const handleClickEvent = (event: CalendarEvent) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const ev = event as any;
-    if ((ev._isBirthday || ev._isFollowUp) && ev._personId) {
-      router.push(`/people?person=${ev._personId}`);
+    if ((event._isBirthday || event._isFollowUp) && event._personId) {
+      router.push(`/people?person=${event._personId}`);
       return;
     }
     setModalState({
@@ -468,6 +480,18 @@ export default function CalendarPage() {
     window.open(`/api/calendar/export?subCalendarId=${id}`, "_blank");
   };
 
+  // Filter events based on People visibility and search query
+  const visibleEvents = events.filter((ev) => {
+    if (!isPeopleVisible && (ev._isBirthday || ev._isFollowUp)) return false;
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      const matchesTitle = ev.title.toLowerCase().includes(q);
+      const matchesLocation = ev.location?.toLowerCase().includes(q) ?? false;
+      if (!matchesTitle && !matchesLocation) return false;
+    }
+    return true;
+  });
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full">
@@ -498,6 +522,10 @@ export default function CalendarPage() {
         onSyncCalendar={syncCalendar}
         onExportCalendar={handleExportCalendar}
         syncingIds={syncingIds}
+        isPeopleVisible={isPeopleVisible}
+        onTogglePeople={() => setIsPeopleVisible((v) => !v)}
+        peopleColor={peopleColor}
+        onPeopleColorChange={handlePeopleColorChange}
         mobileOpen={calSidebarOpen}
         onMobileClose={() => setCalSidebarOpen(false)}
       />
@@ -519,12 +547,14 @@ export default function CalendarPage() {
           zoomLevel={zoomLevel}
           onZoomChange={setZoomLevel}
           onToggleSidebar={() => setCalSidebarOpen(true)}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
         />
 
         {view === "month" ? (
           <MonthView
             currentDate={currentDate}
-            events={events}
+            events={visibleEvents}
             getEventColor={getEventColor}
             onClickDay={handleClickDay}
             onClickEvent={handleClickEvent}
@@ -536,7 +566,7 @@ export default function CalendarPage() {
         ) : (
           <WeekView
             currentDate={currentDate}
-            events={events}
+            events={visibleEvents}
             getEventColor={getEventColor}
             onClickSlot={handleClickSlot}
             onClickEvent={handleClickEvent}

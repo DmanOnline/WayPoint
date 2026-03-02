@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import React, { useMemo, useRef, useCallback, useEffect, useState } from "react";
 import { JournalEntry, getMood, toDateStr } from "@/lib/types/journal";
 
 export type JournalNav = "today" | "all" | "stats";
@@ -45,6 +45,39 @@ export default function JournalSidebar({
   const today = new Date();
   const calendarYear = selectedDate.getFullYear();
   const calendarMonth = selectedDate.getMonth();
+
+  // Liquid glass indicator
+  const navRef = useRef<HTMLElement>(null);
+  const itemRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
+  const [indicatorStyle, setIndicatorStyle] = useState({ top: 0, height: 0, opacity: 0 });
+  const [hasAnimated, setHasAnimated] = useState(false);
+
+  const setItemRef = useCallback((key: string, el: HTMLButtonElement | null) => {
+    if (el) itemRefs.current.set(key, el);
+    else itemRefs.current.delete(key);
+  }, []);
+
+  const updateIndicator = useCallback(() => {
+    const activeEl = itemRefs.current.get(activeNav);
+    const navEl = navRef.current;
+    if (!activeEl || !navEl) {
+      setIndicatorStyle((s) => ({ ...s, opacity: 0 }));
+      return;
+    }
+    const navRect = navEl.getBoundingClientRect();
+    const itemRect = activeEl.getBoundingClientRect();
+    setIndicatorStyle({ top: itemRect.top - navRect.top, height: itemRect.height, opacity: 1 });
+    if (!hasAnimated) requestAnimationFrame(() => setHasAnimated(true));
+  }, [activeNav, hasAnimated]);
+
+  useEffect(() => {
+    updateIndicator();
+  }, [activeNav, mobileOpen, updateIndicator]);
+
+  useEffect(() => {
+    window.addEventListener("resize", updateIndicator);
+    return () => window.removeEventListener("resize", updateIndicator);
+  }, [updateIndicator]);
 
   // Map dateStr → entry for quick lookup
   const entriesByDate = useMemo(() => {
@@ -93,14 +126,33 @@ export default function JournalSidebar({
   const sidebarContent = (
     <div className="h-full flex flex-col">
       {/* Nav */}
-      <nav className="px-3 pt-4 pb-2 space-y-0.5">
+      <nav ref={navRef} className="px-3 pt-4 pb-2 space-y-0.5 relative">
+        {/* Liquid glass indicator */}
+        <div
+          className="absolute left-3 right-3 rounded-lg pointer-events-none z-0"
+          style={{
+            top: indicatorStyle.top,
+            height: indicatorStyle.height,
+            opacity: indicatorStyle.opacity,
+            transition: hasAnimated
+              ? "top 0.5s cubic-bezier(0.32, 0.72, 0, 1), height 0.3s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.2s ease"
+              : "none",
+            background: "var(--accent-glow)",
+            backdropFilter: "blur(12px) saturate(1.8)",
+            WebkitBackdropFilter: "blur(12px) saturate(1.8)",
+            border: "1px solid rgba(108, 99, 255, 0.15)",
+            boxShadow: "0 0 20px var(--accent-glow), inset 0 1px 0 rgba(255, 255, 255, 0.1), inset 0 -1px 0 rgba(0, 0, 0, 0.05)",
+          }}
+        />
+
         {navItems.map(({ nav, label, icon }) => (
           <button
             key={nav}
+            ref={(el) => setItemRef(nav, el)}
             onClick={() => { onSelectNav(nav); onMobileClose?.(); }}
-            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+            className={`relative z-10 w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-150 ${
               activeNav === nav
-                ? "bg-accent/10 text-accent"
+                ? "text-accent"
                 : "text-muted-foreground hover:text-foreground hover:bg-surface-hover"
             }`}
           >

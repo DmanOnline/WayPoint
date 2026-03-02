@@ -272,14 +272,34 @@ export function getWeekRange(date: Date): { start: Date; end: Date } {
  * Available event colors with labels.
  */
 export const EVENT_COLORS = [
-  { value: "#6C63FF", label: "Indigo" },
-  { value: "#8b5cf6", label: "Paars" },
-  { value: "#3b82f6", label: "Blauw" },
-  { value: "#06b6d4", label: "Cyan" },
-  { value: "#10b981", label: "Groen" },
-  { value: "#f59e0b", label: "Amber" },
-  { value: "#f97316", label: "Oranje" },
+  // Rood / roze
   { value: "#ef4444", label: "Rood" },
+  { value: "#f43f5e", label: "Robijn" },
   { value: "#ec4899", label: "Roze" },
-  { value: "#64748b", label: "Grijs" },
+  { value: "#f472b6", label: "Lichtroze" },
+  // Oranje / geel
+  { value: "#f97316", label: "Oranje" },
+  { value: "#f59e0b", label: "Amber" },
+  { value: "#eab308", label: "Geel" },
+  { value: "#84cc16", label: "Limoen" },
+  // Groen / teal
+  { value: "#22c55e", label: "Groen" },
+  { value: "#10b981", label: "Emerald" },
+  { value: "#14b8a6", label: "Teal" },
+  { value: "#06b6d4", label: "Cyan" },
+  // Blauw / indigo
+  { value: "#0ea5e9", label: "Lichtblauw" },
+  { value: "#3b82f6", label: "Blauw" },
+  { value: "#6366f1", label: "Violet" },
+  { value: "#6C63FF", label: "Indigo" },
+  // Paars / lila
+  { value: "#8b5cf6", label: "Paars" },
+  { value: "#a855f7", label: "Lila" },
+  { value: "#d946ef", label: "Fuchsia" },
+  { value: "#e879f9", label: "Orchidee" },
+  // Grijs / neutraal
+  { value: "#64748b", label: "Leisteen" },
+  { value: "#78716c", label: "Steen" },
+  { value: "#1e293b", label: "Nacht" },
+  { value: "#334155", label: "Donkerblauw" },
 ];

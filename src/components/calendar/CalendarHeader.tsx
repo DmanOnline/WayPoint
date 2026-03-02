@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { MONTH_NAMES } from "@/lib/calendar";
 import { CalendarView } from "@/lib/types/calendar";
 
@@ -12,6 +13,8 @@ interface CalendarHeaderProps {
   zoomLevel?: number;
   onZoomChange?: (level: number) => void;
   onToggleSidebar?: () => void;
+  searchQuery?: string;
+  onSearchChange?: (q: string) => void;
 }
 
 const ZOOM_LEVELS = [
@@ -31,9 +34,19 @@ export default function CalendarHeader({
   zoomLevel = 40,
   onZoomChange,
   onToggleSidebar,
+  searchQuery = "",
+  onSearchChange,
 }: CalendarHeaderProps) {
+  const [searchOpen, setSearchOpen] = useState(false);
   const monthName = MONTH_NAMES[currentDate.getMonth()];
   const year = currentDate.getFullYear();
+
+  const handleSearchToggle = () => {
+    if (searchOpen && searchQuery) {
+      onSearchChange?.("");
+    }
+    setSearchOpen((v) => !v);
+  };
 
   return (
     <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
@@ -143,6 +156,43 @@ export default function CalendarHeader({
             Week
           </button>
         </div>
+
+        {/* Search */}
+        {onSearchChange && (
+          <div className="flex items-center gap-1">
+            {searchOpen && (
+              <input
+                autoFocus
+                type="text"
+                value={searchQuery}
+                onChange={(e) => onSearchChange(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Escape") {
+                    onSearchChange("");
+                    setSearchOpen(false);
+                  }
+                }}
+                placeholder="Zoek evenement..."
+                className="w-40 md:w-52 px-3 py-1.5 text-sm bg-surface border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent/50 transition-all"
+              />
+            )}
+            <button
+              onClick={handleSearchToggle}
+              className={`p-2 rounded-lg transition-colors ${searchOpen ? "bg-accent/10 text-accent" : "hover:bg-overlay text-muted-foreground hover:text-foreground"}`}
+              title="Zoeken"
+            >
+              {searchOpen ? (
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                </svg>
+              ) : (
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+                </svg>
+              )}
+            </button>
+          </div>
+        )}
 
         {/* New event button */}
         <button

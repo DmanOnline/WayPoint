@@ -17,6 +17,7 @@ interface TimeSlotProps {
   onDrop: (e: React.DragEvent, date: Date, hour: number) => void;
   slotHeight?: number;
   now: Date;
+  layoutInfo?: Map<string, { colIndex: number; totalCols: number }>;
 }
 
 export default function TimeSlot({
@@ -32,6 +33,7 @@ export default function TimeSlot({
   onDrop,
   slotHeight = 40,
   now,
+  layoutInfo,
 }: TimeSlotProps) {
   const today = isToday(date);
   const currentHour = now.getHours();
@@ -80,13 +82,22 @@ export default function TimeSlot({
         const height = Math.max((endHour - startHour) * slotHeight - 2, 16);
         const isPast = end < now;
 
+        const eventKey = event._virtualId || event.id;
+        const layout = layoutInfo?.get(eventKey);
+        const colIndex = layout?.colIndex ?? 0;
+        const totalCols = layout?.totalCols ?? 1;
+        const leftPct = (colIndex / totalCols) * 100;
+        const widthPct = (1 / totalCols) * 100;
+
         return (
           <div
-            key={event._virtualId || event.id}
-            className="absolute left-0.5 right-0.5 z-10"
+            key={eventKey}
+            className="absolute z-10"
             style={{
               top: `${topOffset}px`,
               height: `${height}px`,
+              left: `calc(${leftPct}% + 2px)`,
+              width: `calc(${widthPct}% - 4px)`,
             }}
             onClick={(e) => e.stopPropagation()}
           >

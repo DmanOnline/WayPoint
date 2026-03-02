@@ -54,6 +54,68 @@ export default function WeekView({
     }
   }, [slotHeight]);
 
+  // Compute side-by-side column layout for overlapping timed events on a given day
+  function computeEventLayout(dayEvents: CalendarEvent[]): Map<string, { colIndex: number; totalCols: number }> {
+    const sorted = [...dayEvents].sort(
+      (a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
+    );
+
+    // Greedy column assignment: track end time per column
+    const columns: number[] = [];
+    const assignments = new Map<string, number>();
+
+    for (const event of sorted) {
+      const eventKey = event._virtualId || event.id;
+      const startMs = new Date(event.startDate).getTime();
+      const endMs = new Date(event.endDate).getTime();
+
+      let colIndex = columns.findIndex((colEnd) => colEnd <= startMs);
+      if (colIndex === -1) {
+        colIndex = columns.length;
+        columns.push(endMs);
+      } else {
+        columns[colIndex] = endMs;
+      }
+      assignments.set(eventKey, colIndex);
+    }
+
+    // For each event, find totalCols = max column index among all overlapping events + 1
+    const result = new Map<string, { colIndex: number; totalCols: number }>();
+    for (const event of sorted) {
+      const eventKey = event._virtualId || event.id;
+      const startMs = new Date(event.startDate).getTime();
+      const endMs = new Date(event.endDate).getTime();
+
+      let maxCol = assignments.get(eventKey) ?? 0;
+      for (const other of sorted) {
+        const otherStart = new Date(other.startDate).getTime();
+        const otherEnd = new Date(other.endDate).getTime();
+        if (otherStart < endMs && otherEnd > startMs) {
+          const otherCol = assignments.get(other._virtualId || other.id) ?? 0;
+          if (otherCol > maxCol) maxCol = otherCol;
+        }
+      }
+
+      result.set(eventKey, { colIndex: assignments.get(eventKey) ?? 0, totalCols: maxCol + 1 });
+    }
+
+    return result;
+  }
+
+  // Compute layout per day (for all timed events)
+  const dayLayouts = days.map((date) => {
+    const timedEvents = events.filter((event) => {
+      if (event.isAllDay) return false;
+      const start = new Date(event.startDate);
+      return (
+        start.getFullYear() === date.getFullYear() &&
+        start.getMonth() === date.getMonth() &&
+        start.getDate() === date.getDate()
+      );
+    });
+    return computeEventLayout(timedEvents);
+  });
+
   // Get events for a specific day and hour
   function getEventsForSlot(date: Date, hour: number): CalendarEvent[] {
     return events.filter((event) => {
@@ -185,6 +247,7 @@ export default function WeekView({
                   onDrop={onDrop}
                   slotHeight={slotHeight}
                   now={now}
+                  layoutInfo={dayLayouts[dayIndex]}
                 />
               ))}
             </div>

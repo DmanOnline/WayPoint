@@ -1,9 +1,9 @@
 "use client";
 
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import { Project } from "@/lib/types/tasks";
-import { useState } from "react";
 
-type NavItem = "inbox" | "today" | "upcoming" | "completed";
+type NavItem = "inbox" | "today" | "upcoming" | "completed" | "insights";
 
 interface TaskSidebarProps {
   projects: Project[];
@@ -14,6 +14,7 @@ interface TaskSidebarProps {
     today: number;
     upcoming: number;
     completed: number;
+    insights?: number;
   };
   onSelectNav: (nav: NavItem) => void;
   onSelectProject: (id: string) => void;
@@ -40,7 +41,45 @@ export default function TaskSidebar({
   const [menuOpen, setMenuOpen] = useState<string | null>(null);
   const [projectsExpanded, setProjectsExpanded] = useState(true);
 
-  const navItems: { key: NavItem; label: string; icon: React.ReactNode; count: number }[] = [
+  // Liquid glass indicator
+  const navRef = useRef<HTMLDivElement>(null);
+  const itemRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
+  const [indicatorStyle, setIndicatorStyle] = useState({ top: 0, height: 0, opacity: 0 });
+  const [hasAnimated, setHasAnimated] = useState(false);
+
+  const setItemRef = useCallback((key: string, el: HTMLButtonElement | null) => {
+    if (el) itemRefs.current.set(key, el);
+    else itemRefs.current.delete(key);
+  }, []);
+
+  const updateIndicator = useCallback(() => {
+    // Only animate nav items, not projects
+    if (activeProjectId) {
+      setIndicatorStyle((s) => ({ ...s, opacity: 0 }));
+      return;
+    }
+    const activeEl = itemRefs.current.get(activeNav);
+    const navEl = navRef.current;
+    if (!activeEl || !navEl) {
+      setIndicatorStyle((s) => ({ ...s, opacity: 0 }));
+      return;
+    }
+    const navRect = navEl.getBoundingClientRect();
+    const itemRect = activeEl.getBoundingClientRect();
+    setIndicatorStyle({ top: itemRect.top - navRect.top, height: itemRect.height, opacity: 1 });
+    if (!hasAnimated) requestAnimationFrame(() => setHasAnimated(true));
+  }, [activeNav, activeProjectId, hasAnimated]);
+
+  useEffect(() => {
+    updateIndicator();
+  }, [activeNav, activeProjectId, projectsExpanded, mobileOpen, updateIndicator]);
+
+  useEffect(() => {
+    window.addEventListener("resize", updateIndicator);
+    return () => window.removeEventListener("resize", updateIndicator);
+  }, [updateIndicator]);
+
+  const navItems: { key: NavItem; label: string; icon: React.ReactNode; count: number; dividerBefore?: boolean }[] = [
     {
       key: "inbox",
       label: "Inbox",
@@ -92,6 +131,19 @@ export default function TaskSidebar({
         </svg>
       ),
     },
+    {
+      key: "insights",
+      label: "Inzichten",
+      count: 0,
+      dividerBefore: true,
+      icon: (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+          <line x1="18" y1="20" x2="18" y2="10" />
+          <line x1="12" y1="20" x2="12" y2="4" />
+          <line x1="6" y1="20" x2="6" y2="14" />
+        </svg>
+      ),
+    },
   ];
 
   const handleSelectNav = (nav: NavItem) => {
@@ -116,29 +168,52 @@ export default function TaskSidebar({
 
       <div className={`w-64 shrink-0 border-r border-border flex-col h-full bg-surface/50 ${mobileOpen ? "flex fixed inset-y-0 left-0 z-50" : "hidden"} md:flex md:relative`}>
         {/* Navigation */}
-        <div className="p-3 space-y-0.5">
+        <div ref={navRef} className="p-3 space-y-0.5 relative">
+          {/* Liquid glass indicator */}
+          <div
+            className="absolute left-3 right-3 rounded-lg pointer-events-none z-0"
+            style={{
+              top: indicatorStyle.top,
+              height: indicatorStyle.height,
+              opacity: indicatorStyle.opacity,
+              transition: hasAnimated
+                ? "top 0.5s cubic-bezier(0.32, 0.72, 0, 1), height 0.3s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.2s ease"
+                : "none",
+              background: "var(--accent-glow)",
+              backdropFilter: "blur(12px) saturate(1.8)",
+              WebkitBackdropFilter: "blur(12px) saturate(1.8)",
+              border: "1px solid rgba(108, 99, 255, 0.15)",
+              boxShadow: "0 0 20px var(--accent-glow), inset 0 1px 0 rgba(255, 255, 255, 0.1), inset 0 -1px 0 rgba(0, 0, 0, 0.05)",
+            }}
+          />
+
           {navItems.map((item) => {
             const isActive = !activeProjectId && activeNav === item.key;
             return (
-              <button
-                key={item.key}
-                onClick={() => handleSelectNav(item.key)}
-                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all ${
-                  isActive
-                    ? "bg-accent/10 text-accent font-medium"
-                    : "text-foreground hover:bg-surface-hover"
-                }`}
-              >
-                <span className={isActive ? "text-accent" : "text-muted-foreground"}>
-                  {item.icon}
-                </span>
-                <span className="flex-1 text-left">{item.label}</span>
-                {item.count > 0 && (
-                  <span className={`text-xs ${isActive ? "text-accent/70" : "text-muted-foreground/60"}`}>
-                    {item.count}
-                  </span>
+              <React.Fragment key={item.key}>
+                {item.dividerBefore && (
+                  <div className="mx-0 my-1 border-t border-border" />
                 )}
-              </button>
+                <button
+                  ref={(el) => setItemRef(item.key, el)}
+                  onClick={() => handleSelectNav(item.key)}
+                  className={`relative z-10 w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors duration-150 ${
+                    isActive
+                      ? "text-accent font-medium"
+                      : "text-foreground hover:bg-surface-hover"
+                  }`}
+                >
+                  <span className={isActive ? "text-accent" : "text-muted-foreground"}>
+                    {item.icon}
+                  </span>
+                  <span className="flex-1 text-left">{item.label}</span>
+                  {item.count > 0 && (
+                    <span className={`text-xs ${isActive ? "text-accent/70" : "text-muted-foreground/60"}`}>
+                      {item.count}
+                    </span>
+                  )}
+                </button>
+              </React.Fragment>
             );
           })}
         </div>

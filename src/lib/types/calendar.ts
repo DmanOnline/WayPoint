@@ -34,6 +34,11 @@ export interface CalendarEvent {
   // Virtual fields for expanded recurring events
   _virtualId?: string;
   _isVirtual?: boolean;
+  // Virtual fields for People module integration
+  _isBirthday?: boolean;
+  _isFollowUp?: boolean;
+  _personId?: string;
+  _followUpId?: string;
 }
 
 export interface ModalState {

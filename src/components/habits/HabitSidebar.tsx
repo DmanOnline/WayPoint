@@ -1,7 +1,7 @@
 "use client";
 
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import { HabitCategory } from "@/lib/types/habits";
-import { useState } from "react";
 
 export type HabitNav = "today" | "all" | "stats" | "archived";
 
@@ -39,6 +39,43 @@ export default function HabitSidebar({
 }: HabitSidebarProps) {
   const [menuOpen, setMenuOpen] = useState<string | null>(null);
   const [categoriesExpanded, setCategoriesExpanded] = useState(true);
+
+  // Liquid glass indicator
+  const navRef = useRef<HTMLDivElement>(null);
+  const itemRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
+  const [indicatorStyle, setIndicatorStyle] = useState({ top: 0, height: 0, opacity: 0 });
+  const [hasAnimated, setHasAnimated] = useState(false);
+
+  const setItemRef = useCallback((key: string, el: HTMLButtonElement | null) => {
+    if (el) itemRefs.current.set(key, el);
+    else itemRefs.current.delete(key);
+  }, []);
+
+  const updateIndicator = useCallback(() => {
+    if (activeCategoryId) {
+      setIndicatorStyle((s) => ({ ...s, opacity: 0 }));
+      return;
+    }
+    const activeEl = itemRefs.current.get(activeNav);
+    const navEl = navRef.current;
+    if (!activeEl || !navEl) {
+      setIndicatorStyle((s) => ({ ...s, opacity: 0 }));
+      return;
+    }
+    const navRect = navEl.getBoundingClientRect();
+    const itemRect = activeEl.getBoundingClientRect();
+    setIndicatorStyle({ top: itemRect.top - navRect.top, height: itemRect.height, opacity: 1 });
+    if (!hasAnimated) requestAnimationFrame(() => setHasAnimated(true));
+  }, [activeNav, activeCategoryId, hasAnimated]);
+
+  useEffect(() => {
+    updateIndicator();
+  }, [activeNav, activeCategoryId, categoriesExpanded, mobileOpen, updateIndicator]);
+
+  useEffect(() => {
+    window.addEventListener("resize", updateIndicator);
+    return () => window.removeEventListener("resize", updateIndicator);
+  }, [updateIndicator]);
 
   const navItems: { key: HabitNav; label: string; icon: React.ReactNode; count?: string }[] = [
     {
@@ -115,16 +152,35 @@ export default function HabitSidebar({
 
       <div className={`w-64 shrink-0 border-r border-border flex-col h-full bg-surface/50 ${mobileOpen ? "flex fixed inset-y-0 left-0 z-50" : "hidden"} md:flex md:relative`}>
         {/* Navigation */}
-        <div className="p-3 space-y-0.5">
+        <div ref={navRef} className="p-3 space-y-0.5 relative">
+          {/* Liquid glass indicator */}
+          <div
+            className="absolute left-3 right-3 rounded-lg pointer-events-none z-0"
+            style={{
+              top: indicatorStyle.top,
+              height: indicatorStyle.height,
+              opacity: indicatorStyle.opacity,
+              transition: hasAnimated
+                ? "top 0.5s cubic-bezier(0.32, 0.72, 0, 1), height 0.3s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.2s ease"
+                : "none",
+              background: "var(--accent-glow)",
+              backdropFilter: "blur(12px) saturate(1.8)",
+              WebkitBackdropFilter: "blur(12px) saturate(1.8)",
+              border: "1px solid rgba(108, 99, 255, 0.15)",
+              boxShadow: "0 0 20px var(--accent-glow), inset 0 1px 0 rgba(255, 255, 255, 0.1), inset 0 -1px 0 rgba(0, 0, 0, 0.05)",
+            }}
+          />
+
           {navItems.map((item) => {
             const isActive = !activeCategoryId && activeNav === item.key;
             return (
               <button
                 key={item.key}
+                ref={(el) => setItemRef(item.key, el)}
                 onClick={() => handleSelectNav(item.key)}
-                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all ${
+                className={`relative z-10 w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors duration-150 ${
                   isActive
-                    ? "bg-accent/10 text-accent font-medium"
+                    ? "text-accent font-medium"
                     : "text-foreground hover:bg-surface-hover"
                 }`}
               >

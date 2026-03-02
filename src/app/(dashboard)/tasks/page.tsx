@@ -14,8 +14,9 @@ import TaskSidebar from "@/components/tasks/TaskSidebar";
 import TaskList from "@/components/tasks/TaskList";
 import TaskModal from "@/components/tasks/TaskModal";
 import ProjectModal from "@/components/tasks/ProjectModal";
+import TaskInsights from "@/components/tasks/TaskInsights";
 
-type NavMode = "inbox" | "today" | "upcoming" | "completed";
+type NavMode = "inbox" | "today" | "upcoming" | "completed" | "insights";
 
 function toDateStr(d: Date): string {
   return `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")}`;
@@ -26,6 +27,7 @@ const NAV_TITLES: Record<NavMode, string> = {
   today: "Vandaag",
   upcoming: "Aankomend",
   completed: "Voltooid",
+  insights: "Inzichten",
 };
 
 export default function TasksPage() {
@@ -153,6 +155,8 @@ export default function TasksPage() {
         });
       case "completed":
         return allTasks.filter((t) => t.status === "done");
+      case "insights":
+        return [];
       default:
         return allTasks;
     }
@@ -243,6 +247,7 @@ export default function TasksPage() {
         recurrenceDay: formData.recurrenceDay,
         recurrenceEnd: formData.recurrenceEnd || null,
         estimatedDuration: formData.estimatedDuration || 60,
+        checklistItems: formData.checklistItems ?? [],
       };
 
       const url = isEditing ? `/api/tasks/${taskModal.task!.id}` : "/api/tasks";
@@ -426,10 +431,12 @@ export default function TasksPage() {
           </div>
         </div>
 
-        {/* Task list */}
+        {/* Task list / Insights */}
         <div className="flex-1 overflow-y-auto px-4 md:px-10 pb-8">
-          {/* Upcoming grouped view */}
-          {upcomingGrouped ? (
+          {/* Insights view */}
+          {nav === "insights" && !activeProjectId ? (
+            <TaskInsights />
+          ) : upcomingGrouped ? (
             <div className="space-y-6">
               {upcomingGrouped.length === 0 && (
                 <EmptyState message="Geen aankomende taken gepland." />
@@ -504,7 +511,7 @@ export default function TasksPage() {
           )}
 
           {/* Floating add - only when list is empty and quick add not shown */}
-          {filteredTasks.length === 0 && !showQuickAdd && nav !== "completed" && (
+          {filteredTasks.length === 0 && !showQuickAdd && nav !== "completed" && nav !== "insights" && (
             <button
               onClick={() => setShowQuickAdd(true)}
               className="group flex items-center gap-3 px-2 py-2.5 text-sm text-muted-foreground hover:text-accent transition-colors mt-2"

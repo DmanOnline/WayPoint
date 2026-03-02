@@ -1,5 +1,6 @@
 "use client";
 
+import React, { useRef, useCallback, useEffect, useState } from "react";
 import { Person, PERSON_TYPES, isBirthdayWithin } from "@/lib/types/people";
 
 export type PeopleNav = "all" | "pinned" | "archived" | string; // string for type filter
@@ -39,13 +40,58 @@ export default function PeopleSidebar({
     count: people.filter((p) => p.tags?.includes(tag)).length,
   }));
 
-  const navBtn = (nav: PeopleNav, label: string, count: number, icon: React.ReactNode) => (
+  // Liquid glass indicator — only for main nav items
+  const navRef = useRef<HTMLElement>(null);
+  const itemRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
+  const [indicatorStyle, setIndicatorStyle] = useState({ top: 0, height: 0, opacity: 0 });
+  const [hasAnimated, setHasAnimated] = useState(false);
+
+  const setItemRef = useCallback((key: string, el: HTMLButtonElement | null) => {
+    if (el) itemRefs.current.set(key, el);
+    else itemRefs.current.delete(key);
+  }, []);
+
+  const updateIndicator = useCallback(() => {
+    // Only show indicator for main nav items (not type: / tag: filters)
+    if (activeNav.startsWith("type:") || activeNav.startsWith("tag:")) {
+      setIndicatorStyle((s) => ({ ...s, opacity: 0 }));
+      return;
+    }
+    const activeEl = itemRefs.current.get(activeNav);
+    const navEl = navRef.current;
+    if (!activeEl || !navEl) {
+      setIndicatorStyle((s) => ({ ...s, opacity: 0 }));
+      return;
+    }
+    const navRect = navEl.getBoundingClientRect();
+    const itemRect = activeEl.getBoundingClientRect();
+    setIndicatorStyle({ top: itemRect.top - navRect.top, height: itemRect.height, opacity: 1 });
+    if (!hasAnimated) requestAnimationFrame(() => setHasAnimated(true));
+  }, [activeNav, hasAnimated]);
+
+  useEffect(() => {
+    updateIndicator();
+  }, [activeNav, people, mobileOpen, updateIndicator]);
+
+  useEffect(() => {
+    window.addEventListener("resize", updateIndicator);
+    return () => window.removeEventListener("resize", updateIndicator);
+  }, [updateIndicator]);
+
+  const navBtn = (
+    nav: PeopleNav,
+    label: string,
+    count: number,
+    icon: React.ReactNode,
+    refCallback?: (el: HTMLButtonElement | null) => void
+  ) => (
     <button
       key={nav}
+      ref={refCallback}
       onClick={() => { onSelectNav(nav); onMobileClose?.(); }}
-      className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+      className={`relative z-10 w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-150 ${
         activeNav === nav
-          ? "bg-accent/10 text-accent"
+          ? "text-accent"
           : "text-muted-foreground hover:text-foreground hover:bg-surface-hover"
       }`}
     >
@@ -83,30 +129,52 @@ export default function PeopleSidebar({
       </div>
 
       {/* Main nav */}
-      <nav className="px-3 pb-2 space-y-0.5">
+      <nav ref={navRef} className="px-3 pb-2 space-y-0.5 relative">
+        {/* Liquid glass indicator */}
+        <div
+          className="absolute left-3 right-3 rounded-lg pointer-events-none z-0"
+          style={{
+            top: indicatorStyle.top,
+            height: indicatorStyle.height,
+            opacity: indicatorStyle.opacity,
+            transition: hasAnimated
+              ? "top 0.5s cubic-bezier(0.32, 0.72, 0, 1), height 0.3s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.2s ease"
+              : "none",
+            background: "var(--accent-glow)",
+            backdropFilter: "blur(12px) saturate(1.8)",
+            WebkitBackdropFilter: "blur(12px) saturate(1.8)",
+            border: "1px solid rgba(108, 99, 255, 0.15)",
+            boxShadow: "0 0 20px var(--accent-glow), inset 0 1px 0 rgba(255, 255, 255, 0.1), inset 0 -1px 0 rgba(0, 0, 0, 0.05)",
+          }}
+        />
+
         {navBtn("dashboard", "Dashboard", 0, (
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3v11.25A2.25 2.25 0 0 0 6 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0 1 18 16.5h-2.25m-7.5 0h7.5m-7.5 0-1 3m8.5-3 1 3m0 0 .5 1.5m-.5-1.5h-9.5m0 0-.5 1.5" />
           </svg>
-        ))}
+        ), (el) => setItemRef("dashboard", el))}
+
         {navBtn("all", "Alle mensen", people.length, (
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
           </svg>
-        ))}
+        ), (el) => setItemRef("all", el))}
+
         {pinnedCount > 0 && navBtn("pinned", "Gepind", pinnedCount, (
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0Z" />
           </svg>
-        ))}
+        ), (el) => setItemRef("pinned", el))}
+
         {birthdayCount > 0 && navBtn("birthdays", "Verjaardagen", birthdayCount, (
           <span className="text-sm">🎂</span>
-        ))}
+        ), (el) => setItemRef("birthdays", el))}
+
         {archivedCount > 0 && navBtn("archived", "Gearchiveerd", archivedCount, (
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" d="m20.25 7.5-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5m8.25 3v6.75m0 0-3-3m3 3 3-3M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z" />
           </svg>
-        ))}
+        ), (el) => setItemRef("archived", el))}
       </nav>
 
       <div className="border-t border-border mx-3 my-2" />

@@ -6,6 +6,7 @@ import {
   CONTACT_FREQUENCIES,
   type RelationshipHealth,
 } from "@/lib/types/people";
+import { expandRecurrences } from "@/lib/calendar";
 
 function toDateStr(d: Date): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
@@ -97,15 +98,19 @@ export async function GET() {
         },
       }),
 
-      // ── Calendar: today's events (simplified, no recurrence expansion) ──
+      // ── Calendar: today's events (non-recurring + recurring masters + exceptions) ──
       prisma.calendarEvent.findMany({
         where: {
           userId,
           isLocallyDeleted: false,
-          recurrenceRule: null,
-          parentEventId: null,
-          startDate: { lte: todayEnd },
-          endDate: { gte: todayStart },
+          OR: [
+            // Non-recurring events that overlap today
+            { recurrenceRule: null, parentEventId: null, startDate: { lte: todayEnd }, endDate: { gte: todayStart } },
+            // Recurring master events (will expand in processing)
+            { recurrenceRule: { not: null }, parentEventId: null, startDate: { lte: todayEnd } },
+            // Exception events (edited single occurrences) that overlap today
+            { parentEventId: { not: null }, startDate: { lte: todayEnd }, endDate: { gte: todayStart } },
+          ],
         },
         include: { subCalendar: { select: { id: true, name: true, color: true, isVisible: true } } },
         orderBy: { startDate: "asc" },
@@ -278,15 +283,80 @@ export async function GET() {
     });
 
     // ═══ Process Events ═══
-    const visibleEvents = todayEvents.filter((e) => e.subCalendar.isVisible);
-    const eventItems = visibleEvents.map((e) => ({
-      id: e.id,
-      title: e.title,
-      startDate: e.startDate.toISOString(),
-      endDate: e.endDate.toISOString(),
-      isAllDay: e.isAllDay,
-      color: e.subCalendar.color,
-    }));
+    // Separate by type
+    const nonRecurringEvents = todayEvents.filter((e) => !e.recurrenceRule && !e.parentEventId);
+    const exceptionEvents = todayEvents.filter((e) => e.parentEventId !== null);
+    const recurringMasters = todayEvents.filter((e) => e.recurrenceRule !== null);
+
+    // Dates that have exception events (skip these when expanding recurring masters)
+    const exceptionDatesByParent = new Map<string, Set<string>>();
+    for (const ex of exceptionEvents) {
+      if (!ex.parentEventId || !ex.originalDate) continue;
+      const dateKey = toDateStr(ex.originalDate);
+      if (!exceptionDatesByParent.has(ex.parentEventId)) {
+        exceptionDatesByParent.set(ex.parentEventId, new Set());
+      }
+      exceptionDatesByParent.get(ex.parentEventId)!.add(dateKey);
+    }
+
+    // Expand recurring masters for today
+    const expandedRecurring: typeof nonRecurringEvents = [];
+    for (const master of recurringMasters) {
+      if (!master.recurrenceRule) continue;
+      const exDates = exceptionDatesByParent.get(master.id) ?? new Set<string>();
+      const occurrences = expandRecurrences(
+        { ...master, recurrenceRule: master.recurrenceRule },
+        todayStart,
+        todayEnd,
+        exDates
+      );
+      if (occurrences.length > 0) {
+        expandedRecurring.push({
+          ...master,
+          startDate: occurrences[0].start,
+          endDate: occurrences[0].end,
+        });
+      }
+    }
+
+    // Birthday events for today from allPeople (already fetched)
+    const birthdayItems: Array<{ id: string; title: string; startDate: string; endDate: string; isAllDay: boolean; color: string }> = [];
+    const todayMonth = now.getMonth();
+    const todayDay = now.getDate();
+    const todayYear = now.getFullYear();
+    for (const person of allPeople) {
+      if (!person.birthday) continue;
+      const bday = new Date(person.birthday);
+      if (bday.getMonth() === todayMonth && bday.getDate() === todayDay) {
+        const age = todayYear - bday.getFullYear();
+        birthdayItems.push({
+          id: `birthday_${person.id}_${todayYear}`,
+          title: `🎂 ${person.name}${age > 0 ? ` (${age})` : ""}`,
+          startDate: todayStart.toISOString(),
+          endDate: todayEnd.toISOString(),
+          isAllDay: true,
+          color: person.avatarColor || "#ec4899",
+        });
+      }
+    }
+
+    // Combine all event types
+    const allVisibleEvents = [
+      ...nonRecurringEvents.filter((e) => e.subCalendar.isVisible),
+      ...exceptionEvents.filter((e) => e.subCalendar.isVisible),
+      ...expandedRecurring.filter((e) => e.subCalendar.isVisible),
+    ];
+    const eventItems = [
+      ...allVisibleEvents.map((e) => ({
+        id: e.id,
+        title: e.title,
+        startDate: e.startDate instanceof Date ? e.startDate.toISOString() : e.startDate,
+        endDate: e.endDate instanceof Date ? e.endDate.toISOString() : e.endDate,
+        isAllDay: e.isAllDay,
+        color: e.subCalendar.color,
+      })),
+      ...birthdayItems,
+    ].sort((a, b) => a.startDate.localeCompare(b.startDate));
 
     // ═══ Process Habits ═══
     const todayDate = new Date(today);
