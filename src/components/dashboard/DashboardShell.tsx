@@ -13,6 +13,25 @@ import NotesRecap from "@/components/dashboard/NotesRecap";
 
 export interface DashboardData {
   today: string;
+  tomorrow: string;
+  tomorrowAgenda: {
+    tasks: Array<{
+      id: string;
+      title: string;
+      priority: string;
+      scheduledTime: string | null;
+      dueDate: string | null;
+      project: { name: string; color: string } | null;
+    }>;
+    events: Array<{
+      id: string;
+      title: string;
+      startDate: string;
+      endDate: string;
+      isAllDay: boolean;
+      color: string;
+    }>;
+  };
   tasks: {
     todayCount: number;
     overdueCount: number;
@@ -141,6 +160,8 @@ export default function DashboardShell() {
           <TodayAgenda
             events={data?.events ?? null}
             tasks={data?.tasks ?? null}
+            tomorrow={data?.tomorrow ?? null}
+            tomorrowAgenda={data?.tomorrowAgenda ?? null}
             loading={loading}
           />
           <MoodSparkline

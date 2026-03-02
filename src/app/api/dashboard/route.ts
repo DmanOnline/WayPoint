@@ -33,6 +33,12 @@ export async function GET() {
   const todayStart = startOfDayUTC(today);
   const todayEnd = endOfDayUTC(today);
 
+  const tomorrowDate = new Date(now);
+  tomorrowDate.setDate(tomorrowDate.getDate() + 1);
+  const tomorrow = toDateStr(tomorrowDate);
+  const tomorrowStart = startOfDayUTC(tomorrow);
+  const tomorrowEnd = endOfDayUTC(tomorrow);
+
   // 7 days ago for journal sparkline
   const sevenDaysAgo = new Date(now);
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
@@ -72,6 +78,8 @@ export async function GET() {
       notesPinned,
       // Quote
       quoteData,
+      // Tomorrow's calendar events
+      tomorrowEventsRaw,
     ] = await Promise.all([
       // ── Tasks: all todo/in-progress ──
       prisma.task.findMany({
@@ -239,6 +247,21 @@ export async function GET() {
 
       // ── Quote ──
       fetchQuote(),
+
+      // ── Calendar: tomorrow's events ──
+      prisma.calendarEvent.findMany({
+        where: {
+          userId,
+          isLocallyDeleted: false,
+          OR: [
+            { recurrenceRule: null, parentEventId: null, startDate: { lte: tomorrowEnd }, endDate: { gte: tomorrowStart } },
+            { recurrenceRule: { not: null }, parentEventId: null, startDate: { lte: tomorrowEnd } },
+            { parentEventId: { not: null }, startDate: { lte: tomorrowEnd }, endDate: { gte: tomorrowStart } },
+          ],
+        },
+        include: { subCalendar: { select: { id: true, name: true, color: true, isVisible: true } } },
+        orderBy: { startDate: "asc" },
+      }),
     ]);
 
     // ═══ Process Tasks ═══
@@ -356,6 +379,80 @@ export async function GET() {
         color: e.subCalendar.color,
       })),
       ...birthdayItems,
+    ].sort((a, b) => a.startDate.localeCompare(b.startDate));
+
+    // ═══ Process Tomorrow ═══
+    const tomorrowTaskItems: typeof todayItems = [];
+    for (const task of todoTasks) {
+      const scheduled = task.scheduledDate ? toDateStr(task.scheduledDate) : null;
+      const due = task.dueDate ? toDateStr(task.dueDate) : null;
+      if (scheduled === tomorrow || due === tomorrow) {
+        tomorrowTaskItems.push({
+          id: task.id,
+          title: task.title,
+          priority: task.priority,
+          scheduledTime: task.scheduledTime,
+          dueDate: due,
+          project: task.project,
+        });
+      }
+    }
+    tomorrowTaskItems.sort((a, b) => {
+      if (a.scheduledTime && !b.scheduledTime) return -1;
+      if (!a.scheduledTime && b.scheduledTime) return 1;
+      if (a.scheduledTime && b.scheduledTime) return a.scheduledTime.localeCompare(b.scheduledTime);
+      return 0;
+    });
+
+    // Tomorrow's calendar events (same expand logic as today)
+    const tNonRecurring = tomorrowEventsRaw.filter((e) => !e.recurrenceRule && !e.parentEventId);
+    const tExceptions = tomorrowEventsRaw.filter((e) => e.parentEventId !== null);
+    const tMasters = tomorrowEventsRaw.filter((e) => e.recurrenceRule !== null);
+    const tExDatesByParent = new Map<string, Set<string>>();
+    for (const ex of tExceptions) {
+      if (!ex.parentEventId || !ex.originalDate) continue;
+      if (!tExDatesByParent.has(ex.parentEventId)) tExDatesByParent.set(ex.parentEventId, new Set());
+      tExDatesByParent.get(ex.parentEventId)!.add(toDateStr(ex.originalDate));
+    }
+    const tExpandedRecurring: typeof tNonRecurring = [];
+    for (const master of tMasters) {
+      if (!master.recurrenceRule) continue;
+      const exDates = tExDatesByParent.get(master.id) ?? new Set<string>();
+      const occurrences = expandRecurrences({ ...master, recurrenceRule: master.recurrenceRule }, tomorrowStart, tomorrowEnd, exDates);
+      if (occurrences.length > 0) tExpandedRecurring.push({ ...master, startDate: occurrences[0].start, endDate: occurrences[0].end });
+    }
+    // Tomorrow birthdays
+    const tomorrowMonth = tomorrowDate.getMonth();
+    const tomorrowDay = tomorrowDate.getDate();
+    const tomorrowEventItems = [
+      ...[...tNonRecurring, ...tExceptions, ...tExpandedRecurring]
+        .filter((e) => e.subCalendar.isVisible)
+        .map((e) => ({
+          id: e.id,
+          title: e.title,
+          startDate: e.startDate instanceof Date ? e.startDate.toISOString() : e.startDate,
+          endDate: e.endDate instanceof Date ? e.endDate.toISOString() : e.endDate,
+          isAllDay: e.isAllDay,
+          color: e.subCalendar.color,
+        })),
+      ...allPeople
+        .filter((p) => {
+          if (!p.birthday) return false;
+          const bday = new Date(p.birthday);
+          return bday.getMonth() === tomorrowMonth && bday.getDate() === tomorrowDay;
+        })
+        .map((p) => {
+          const bday = new Date(p.birthday!);
+          const age = tomorrowDate.getFullYear() - bday.getFullYear();
+          return {
+            id: `birthday_${p.id}_${tomorrowDate.getFullYear()}`,
+            title: `🎂 ${p.name}${age > 0 ? ` (${age})` : ""}`,
+            startDate: tomorrowStart.toISOString(),
+            endDate: tomorrowEnd.toISOString(),
+            isAllDay: true,
+            color: p.avatarColor || "#ec4899",
+          };
+        }),
     ].sort((a, b) => a.startDate.localeCompare(b.startDate));
 
     // ═══ Process Habits ═══
@@ -617,6 +714,11 @@ export async function GET() {
     // ═══ Build Response ═══
     return NextResponse.json({
       today,
+      tomorrow,
+      tomorrowAgenda: {
+        tasks: tomorrowTaskItems.slice(0, 10),
+        events: tomorrowEventItems,
+      },
       tasks: {
         todayCount: tasksToday,
         overdueCount,

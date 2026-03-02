@@ -6,6 +6,8 @@ import type { DashboardData } from "./DashboardShell";
 interface Props {
   events: DashboardData["events"] | null;
   tasks: DashboardData["tasks"] | null;
+  tomorrow: string | null;
+  tomorrowAgenda: DashboardData["tomorrowAgenda"] | null;
   loading: boolean;
 }
 
@@ -24,12 +26,40 @@ function formatTime(iso: string): string {
   return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
 }
 
-function getCurrentMinutes(): number {
-  const now = new Date();
-  return now.getHours() * 60 + now.getMinutes();
+function buildItems(
+  events: Array<{ id: string; title: string; startDate: string; isAllDay: boolean; color: string }> | undefined,
+  taskItems: Array<{ id: string; title: string; scheduledTime: string | null; project: { color: string } | null; priority: string }> | undefined
+): AgendaItem[] {
+  const items: AgendaItem[] = [];
+  if (events) {
+    for (const e of events) {
+      items.push({
+        id: e.id,
+        title: e.title,
+        time: e.isAllDay ? null : formatTime(e.startDate),
+        isAllDay: e.isAllDay,
+        color: e.color,
+        type: "event",
+      });
+    }
+  }
+  if (taskItems) {
+    for (const t of taskItems) {
+      items.push({
+        id: t.id,
+        title: t.title,
+        time: t.scheduledTime ?? null,
+        isAllDay: !t.scheduledTime,
+        color: t.project?.color ?? "#06B6D4",
+        type: "task",
+        priority: t.priority,
+      });
+    }
+  }
+  return items;
 }
 
-export default function TodayAgenda({ events, tasks, loading }: Props) {
+export default function TodayAgenda({ events, tasks, tomorrow, tomorrowAgenda, loading }: Props) {
   if (loading) {
     return (
       <div className="rounded-xl border border-border bg-card p-5 animate-fade-in opacity-0 stagger-3">
@@ -49,50 +79,53 @@ export default function TodayAgenda({ events, tasks, loading }: Props) {
     );
   }
 
-  // Merge events and tasks into a single timeline
-  const items: AgendaItem[] = [];
+  // Determine whether to show tomorrow's agenda
+  const now = new Date();
+  const nowMinutes = now.getHours() * 60 + now.getMinutes();
+  const isPastEvening = now.getHours() >= 18;
 
-  if (events?.items) {
-    for (const e of events.items) {
-      items.push({
-        id: e.id,
-        title: e.title,
-        time: e.isAllDay ? null : formatTime(e.startDate),
-        isAllDay: e.isAllDay,
-        color: e.color,
-        type: "event",
-      });
-    }
-  }
+  const todayItems = buildItems(events?.items, tasks?.todayItems);
+  const todayTimed = todayItems.filter((i) => !i.isAllDay);
 
-  if (tasks?.todayItems) {
-    for (const t of tasks.todayItems) {
-      items.push({
-        id: t.id,
-        title: t.title,
-        time: t.scheduledTime ?? null,
-        isAllDay: !t.scheduledTime,
-        color: t.project?.color ?? "#06B6D4",
-        type: "task",
-        priority: t.priority,
-      });
-    }
-  }
+  // Any timed item that still lies in the future (after now)?
+  const hasRemainingItems = todayTimed.some((item) => {
+    if (!item.time) return false;
+    const [h, m] = item.time.split(":").map(Number);
+    return h * 60 + m > nowMinutes;
+  });
 
-  // Sort: all-day first, then by time
+  const showTomorrow = isPastEvening && !hasRemainingItems && !!tomorrowAgenda;
+
+  const items = showTomorrow
+    ? buildItems(tomorrowAgenda!.events, tomorrowAgenda!.tasks)
+    : todayItems;
+
   const allDay = items.filter((i) => i.isAllDay);
   const timed = items
     .filter((i) => !i.isAllDay)
     .sort((a, b) => (a.time ?? "").localeCompare(b.time ?? ""));
 
-  const nowMinutes = getCurrentMinutes();
+  const label = showTomorrow && tomorrow
+    ? (() => {
+        const d = new Date(tomorrow + "T12:00:00");
+        const weekday = d.toLocaleDateString("nl-NL", { weekday: "long" });
+        return weekday.charAt(0).toUpperCase() + weekday.slice(1);
+      })()
+    : "Vandaag";
 
   return (
     <div className="rounded-xl border border-border bg-card p-5 animate-fade-in opacity-0 stagger-3">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-          Vandaag
-        </h3>
+        <div className="flex items-center gap-2">
+          <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            {label}
+          </h3>
+          {showTomorrow && (
+            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-accent/10 text-accent font-medium">
+              morgen
+            </span>
+          )}
+        </div>
         <Link href="/calendar" className="text-xs text-accent hover:underline">
           Kalender
         </Link>
@@ -100,7 +133,7 @@ export default function TodayAgenda({ events, tasks, loading }: Props) {
 
       {items.length === 0 ? (
         <p className="text-sm text-muted-foreground py-4 text-center">
-          Geen events of taken vandaag
+          {showTomorrow ? "Niets gepland voor morgen" : "Geen events of taken vandaag"}
         </p>
       ) : (
         <div className="space-y-1">
@@ -134,11 +167,14 @@ export default function TodayAgenda({ events, tasks, loading }: Props) {
               ? parseInt(nextItem.time.split(":")[0]) * 60 + parseInt(nextItem.time.split(":")[1])
               : 1440;
 
-            const showNowLine = nowMinutes >= itemMinutes && nowMinutes < nextMinutes && idx <= timed.length - 1;
+            // "nu" lijn alleen bij vandaag
+            const showNowLine = !showTomorrow &&
+              nowMinutes >= itemMinutes &&
+              nowMinutes < nextMinutes;
 
             return (
               <div key={item.id}>
-                <div className="flex items-start gap-3 py-1.5 group">
+                <div className="flex items-start gap-3 py-1.5">
                   <span className="text-xs text-muted-foreground tabular-nums w-10 shrink-0 pt-0.5">
                     {item.time}
                   </span>
