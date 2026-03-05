@@ -93,25 +93,27 @@ export default function QuickStats({ data, loading }: QuickStatsProps) {
         return (
           <div
             key={stat.label}
-            className={`rounded-xl bg-card border border-border p-4 transition-colors duration-200 animate-fade-in opacity-0 stagger-${i + 1}`}
+            className={`relative rounded-xl bg-card border border-border p-4 transition-all duration-200 animate-fade-in opacity-0 stagger-${i + 1} card-gradient`}
           >
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-muted-foreground">{stat.icon}</span>
-              <span className="text-xs font-medium text-muted-foreground">
-                {stat.label}
-              </span>
+            <div className="relative z-10">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-muted-foreground">{stat.icon}</span>
+                <span className="text-xs font-medium text-muted-foreground">
+                  {stat.label}
+                </span>
+              </div>
+              <p className={`text-2xl lg:text-3xl font-bold tabular-nums leading-none ${
+                loading ? "text-muted-foreground" :
+                (stat.isNegative && numValue > 0) ? "text-negative" :
+                (stat.isPositive === false) ? "text-negative" :
+                "text-foreground"
+              }`}>
+                {loading ? "–" : stat.value}
+              </p>
+              <p className="text-[11px] text-muted-foreground mt-1.5 truncate">
+                {loading ? "Laden..." : stat.sub}
+              </p>
             </div>
-            <p className={`text-2xl lg:text-3xl font-bold tabular-nums leading-none ${
-              loading ? "text-muted-foreground" :
-              (stat.isNegative && numValue > 0) ? "text-negative" :
-              (stat.isPositive === false) ? "text-negative" :
-              "text-foreground"
-            }`}>
-              {loading ? "–" : stat.value}
-            </p>
-            <p className="text-[11px] text-muted-foreground mt-1.5 truncate">
-              {loading ? "Laden..." : stat.sub}
-            </p>
           </div>
         );
       })}

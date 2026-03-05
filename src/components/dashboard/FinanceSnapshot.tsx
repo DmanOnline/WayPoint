@@ -19,7 +19,7 @@ function formatEuro(cents: number): string {
 export default function FinanceSnapshot({ finance, loading }: Props) {
   if (loading) {
     return (
-      <div className="rounded-xl border border-border bg-card p-5 animate-fade-in opacity-0 stagger-5">
+      <div className="rounded-xl border border-border bg-card p-5 animate-fade-in opacity-0 stagger-5 card-gradient">
         <div className="h-4 w-20 bg-border rounded animate-pulse mb-4" />
         <div className="h-8 w-36 bg-border rounded animate-pulse mb-3" />
         <div className="space-y-2">
@@ -37,7 +37,7 @@ export default function FinanceSnapshot({ finance, loading }: Props) {
   const hasFinanceData = totalCategories > 0 || totalBalance !== 0;
 
   return (
-    <div className="rounded-xl border border-border bg-card p-5 animate-fade-in opacity-0 stagger-5">
+    <div className="rounded-xl border border-border bg-card p-5 animate-fade-in opacity-0 stagger-5 card-gradient">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
           Finance

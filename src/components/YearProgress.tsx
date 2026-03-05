@@ -93,7 +93,7 @@ export default function YearProgress() {
   }, []);
 
   return (
-    <div className="rounded-xl border border-border bg-card p-5 transition-colors duration-200 animate-fade-in">
+    <div className="rounded-xl border border-border bg-card p-5 transition-colors duration-200 animate-fade-in card-gradient">
       <div className="flex items-center gap-2 mb-4">
         <span className="text-muted-foreground">
           <svg

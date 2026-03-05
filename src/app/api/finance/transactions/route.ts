@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { accountId, categoryId, date, payee, memo, amount, isCleared, transferAccountId } = body;
+    const { accountId, categoryId, date, payee, memo, amount, transferAccountId } = body;
 
     if (!accountId) {
       return NextResponse.json({ error: "Account is verplicht" }, { status: 400 });
@@ -102,7 +102,7 @@ export async function POST(request: NextRequest) {
         payee: payee?.trim() || null,
         memo: memo?.trim() || null,
         amount,
-        isCleared: isCleared ?? false,
+        isCleared: true,
         transferAccountId: transferAccountId || null,
       },
       include: {

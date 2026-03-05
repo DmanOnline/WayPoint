@@ -1,61 +1,69 @@
 @import "tailwindcss";
 
-/* ─── Premium Light Mode ─── */
+/* ═══════════════════════════════════════════════
+   WAYPOINT — Revolut-Inspired Design System
+   Dark, clean, vibrant. Financial instrument feel.
+   ═══════════════════════════════════════════════ */
+
+/* ─── Light Mode ─── */
 :root {
-  --background: #ffffff;
-  --foreground: #191C1F;
-  --surface: #f7f7f8;
-  --surface-hover: #ededef;
-  --card: #ffffff;
-  --card-hover: #fafafa;
-  --border: #e6e6ea;
-  --border-subtle: #f0f0f2;
-  --muted: #6b6b73;
-  --muted-foreground: #9c9ca5;
+  --background: #F8F9FB;
+  --foreground: #0D0F13;
+  --surface: #ECEEF2;
+  --surface-hover: #E2E4EA;
+  --card: #FFFFFF;
+  --card-hover: #F8F9FB;
+  --border: rgba(0, 0, 0, 0.06);
+  --border-subtle: rgba(0, 0, 0, 0.03);
+  --muted: #616A78;
+  --muted-foreground: #8B93A1;
   --accent: #6C63FF;
   --accent-hover: #5B52EE;
-  --accent-glow: rgba(108, 99, 255, 0.12);
-  --sidebar-bg: rgba(255, 255, 255, 0.85);
-  --header-bg: rgba(255, 255, 255, 0.65);
+  --accent-glow: rgba(108, 99, 255, 0.10);
+  --sidebar-bg: rgba(255, 255, 255, 0.80);
+  --header-bg: rgba(255, 255, 255, 0.72);
   --overlay: rgba(0, 0, 0, 0.03);
   --shadow-color: rgba(0, 0, 0, 0.06);
   --positive: #00C48C;
   --negative: #FF4757;
   --warning: #FFAB00;
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.03);
-  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.06), 0 4px 12px rgba(0, 0, 0, 0.04);
-  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.08), 0 16px 48px rgba(0, 0, 0, 0.04);
-  /* spring curves */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.06), 0 2px 6px rgba(0, 0, 0, 0.03);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.08), 0 4px 16px rgba(0, 0, 0, 0.04);
   --ease-spring: cubic-bezier(0.25, 0.46, 0.45, 0.94);
   --ease-snappy: cubic-bezier(0.34, 1.56, 0.64, 1);
   --ease-smooth: cubic-bezier(0.22, 1, 0.36, 1);
+  --gradient-card: linear-gradient(135deg, rgba(108, 99, 255, 0.02), transparent 60%);
+  --gradient-accent: linear-gradient(135deg, #6C63FF, #897CFF);
 }
 
-/* ─── Premium Dark Mode ─── */
+/* ─── Dark Mode ─── */
 .dark {
-  --background: #0D0D0F;
-  --foreground: #F5F5F7;
-  --surface: #1A1A1E;
-  --surface-hover: #222226;
-  --card: #1A1A1E;
-  --card-hover: #222226;
-  --border: rgba(255, 255, 255, 0.08);
-  --border-subtle: rgba(255, 255, 255, 0.04);
-  --muted: #6b6b73;
-  --muted-foreground: rgba(255, 255, 255, 0.42);
-  --accent: #7F84F6;
-  --accent-hover: #6C70E8;
-  --accent-glow: rgba(127, 132, 246, 0.14);
-  --sidebar-bg: rgba(13, 13, 15, 0.9);
-  --header-bg: rgba(13, 13, 15, 0.65);
-  --overlay: rgba(255, 255, 255, 0.03);
-  --shadow-color: rgba(0, 0, 0, 0.4);
+  --background: #0A0B0F;
+  --foreground: #F0F2F5;
+  --surface: #12131A;
+  --surface-hover: #1A1B24;
+  --card: #13141C;
+  --card-hover: #1A1B24;
+  --border: rgba(255, 255, 255, 0.06);
+  --border-subtle: rgba(255, 255, 255, 0.03);
+  --muted: #5A5E6B;
+  --muted-foreground: rgba(240, 242, 245, 0.40);
+  --accent: #7B73FF;
+  --accent-hover: #8E87FF;
+  --accent-glow: rgba(123, 115, 255, 0.12);
+  --sidebar-bg: rgba(10, 11, 15, 0.92);
+  --header-bg: rgba(10, 11, 15, 0.72);
+  --overlay: rgba(255, 255, 255, 0.02);
+  --shadow-color: rgba(0, 0, 0, 0.5);
   --positive: #00D68F;
   --negative: #FF6B6B;
   --warning: #FFC542;
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2), 0 1px 3px rgba(0, 0, 0, 0.15);
-  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.25), 0 4px 12px rgba(0, 0, 0, 0.2);
-  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.35), 0 16px 48px rgba(0, 0, 0, 0.25);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.20), 0 1px 2px rgba(0, 0, 0, 0.12);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.25), 0 2px 6px rgba(0, 0, 0, 0.15);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.35), 0 4px 16px rgba(0, 0, 0, 0.20);
+  --gradient-card: linear-gradient(135deg, rgba(123, 115, 255, 0.04), transparent 60%);
+  --gradient-accent: linear-gradient(135deg, #7B73FF, #9B94FF);
 }
 
 @theme inline {
@@ -79,15 +87,32 @@
   --color-positive: var(--positive);
   --color-negative: var(--negative);
   --color-warning: var(--warning);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-outfit);
   --font-mono: var(--font-geist-mono);
 }
 
+/* ─── Base ─── */
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans), system-ui, sans-serif;
   transition: background-color 0.3s ease, color 0.3s ease;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ─── Subtle noise grain for depth ─── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0.018;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px 256px;
 }
 
 /* ─── Entrance Animations (spring-based) ─── */
@@ -111,29 +136,41 @@ body {
   to { opacity: 1; }
 }
 
-.animate-fade-in { animation: fade-in 0.35s var(--ease-smooth) forwards; }
-.animate-slide-in { animation: slide-in 0.25s var(--ease-smooth) forwards; }
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.animate-fade-in { animation: fade-in 0.4s var(--ease-smooth) forwards; }
+.animate-slide-in { animation: slide-in 0.3s var(--ease-smooth) forwards; }
 .animate-scale-in { animation: scale-in 0.2s var(--ease-spring) forwards; }
 .animate-backdrop { animation: backdrop-in 0.2s ease-out forwards; }
 
-/* Stagger delays — snappy 30ms intervals */
-.stagger-1 { animation-delay: 0.03s; }
-.stagger-2 { animation-delay: 0.06s; }
-.stagger-3 { animation-delay: 0.09s; }
-.stagger-4 { animation-delay: 0.12s; }
-.stagger-5 { animation-delay: 0.15s; }
-.stagger-6 { animation-delay: 0.18s; }
-.stagger-7 { animation-delay: 0.21s; }
-.stagger-8 { animation-delay: 0.24s; }
-.stagger-9 { animation-delay: 0.27s; }
-.stagger-10 { animation-delay: 0.30s; }
+/* Stagger delays — 35ms intervals */
+.stagger-1 { animation-delay: 0.035s; }
+.stagger-2 { animation-delay: 0.07s; }
+.stagger-3 { animation-delay: 0.105s; }
+.stagger-4 { animation-delay: 0.14s; }
+.stagger-5 { animation-delay: 0.175s; }
+.stagger-6 { animation-delay: 0.21s; }
+.stagger-7 { animation-delay: 0.245s; }
+.stagger-8 { animation-delay: 0.28s; }
+.stagger-9 { animation-delay: 0.315s; }
+.stagger-10 { animation-delay: 0.35s; }
 
-/* Smooth number count (no bounce) */
+/* Smooth number count */
 @keyframes count-up {
   from { opacity: 0; }
   to { opacity: 1; }
 }
 .animate-count-up { animation: count-up 0.4s var(--ease-spring) forwards; }
+
+/* Shimmer loading */
+.shimmer {
+  background: linear-gradient(90deg, var(--border) 25%, var(--surface-hover) 50%, var(--border) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
 
 /* ─── Task Completion (refined) ─── */
 @keyframes checkbox-spring {
@@ -230,10 +267,14 @@ body {
   --heatmap-4: #10b981;
 }
 
-/* ─── Scrollbar (refined) ─── */
+/* ─── Scrollbar (minimal Revolut-style) ─── */
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--muted-foreground); border-radius: 2px; opacity: 0.2; }
+::-webkit-scrollbar-thumb {
+  background: var(--muted-foreground);
+  border-radius: 2px;
+  opacity: 0.2;
+}
 ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
 
 /* ─── Safe area & mobile ─── */
@@ -280,7 +321,6 @@ html {
   opacity: 0;
 }
 
-/* Goal completion — subtle green tint */
 .goal-completing {
   position: relative;
   overflow: hidden;
@@ -303,7 +343,6 @@ html {
   100% { opacity: 0.6; }
 }
 
-/* Ring 100% complete — subtle static glow (no infinite pulse) */
 .ring-complete-pulse {
   filter: drop-shadow(0 0 8px rgba(0, 196, 140, 0.2));
 }
@@ -318,7 +357,6 @@ html {
   100% { filter: drop-shadow(0 0 8px rgba(0, 196, 140, 0.15)); transform: scale(1); }
 }
 
-/* Checkmark draw-in */
 @keyframes check-draw-in {
   0% { stroke-dashoffset: 30; opacity: 0; }
   60% { stroke-dashoffset: 0; opacity: 1; }
@@ -331,7 +369,6 @@ html {
   animation: check-draw-in 0.4s var(--ease-smooth) 0.25s forwards;
 }
 
-/* Milestone celebrate — subtle bg flash */
 .milestone-celebrate {
   animation: milestone-flash 0.4s var(--ease-spring);
 }
@@ -344,7 +381,7 @@ html {
 
 /* ─── Premium Utility Classes ─── */
 
-/* Card hover lift effect */
+/* Card hover — subtle lift */
 .card-hover {
   transition: transform 0.2s var(--ease-spring), box-shadow 0.2s var(--ease-spring);
 }
@@ -361,11 +398,47 @@ html {
   transform: scale(0.97);
 }
 
-/* Hide scrollbar but allow scrolling */
+/* Hide scrollbar */
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
+}
+
+/* ─── Revolut-specific utilities ─── */
+
+/* Gradient overlay on cards — subtle accent tint */
+.card-gradient {
+  position: relative;
+}
+.card-gradient::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--gradient-card);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Accent gradient button */
+.btn-gradient {
+  background: var(--gradient-accent);
+  color: white;
+  border: none;
+}
+
+/* Glow ring for accent elements */
+.glow-accent {
+  box-shadow: 0 0 20px var(--accent-glow), 0 0 40px rgba(108, 99, 255, 0.05);
+}
+
+/* Frosted glass panel */
+.glass-panel {
+  background: var(--sidebar-bg);
+  backdrop-filter: blur(20px) saturate(1.8);
+  -webkit-backdrop-filter: blur(20px) saturate(1.8);
+  border: 1px solid var(--border);
 }

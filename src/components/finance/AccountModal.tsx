@@ -44,16 +44,17 @@ export default function AccountModal({
   const [balance, setBalance] = useState("");
   const [color, setColor] = useState(COLORS[0]);
   const [saving, setSaving] = useState(false);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
 
   const isEditing = !!account;
 
   useEffect(() => {
     if (open) {
+      setConfirmingDelete(false);
       if (account) {
         setName(account.name);
         setType(account.type as AccountType);
         setGroup(account.group as AccountGroup);
-        setBalance(centsToEuro(account.startBalance));
         setColor(account.color);
       } else {
         setName("");
@@ -168,24 +169,29 @@ export default function AccountModal({
               </div>
             </div>
 
-            {/* Start balance */}
-            <div>
-              <label className="block text-xs font-medium text-muted-foreground mb-1.5">
-                Huidig saldo
-              </label>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
-                  &euro;
-                </span>
-                <input
-                  type="text"
-                  value={balance}
-                  onChange={(e) => setBalance(e.target.value)}
-                  placeholder="0,00"
-                  className="w-full pl-8 pr-3 py-2 bg-surface border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground/50 outline-none focus:border-accent transition-colors tabular-nums"
-                />
+            {/* Start balance — alleen bij aanmaken */}
+            {!isEditing && (
+              <div>
+                <label className="block text-xs font-medium text-muted-foreground mb-1.5">
+                  Startsaldo
+                </label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+                    &euro;
+                  </span>
+                  <input
+                    type="text"
+                    value={balance}
+                    onChange={(e) => setBalance(e.target.value)}
+                    placeholder="0,00"
+                    className="w-full pl-8 pr-3 py-2 bg-surface border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground/50 outline-none focus:border-accent transition-colors tabular-nums"
+                  />
+                </div>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Wordt als opening balance transactie opgeslagen
+                </p>
               </div>
-            </div>
+            )}
 
             {/* Color */}
             <div>
@@ -211,13 +217,33 @@ export default function AccountModal({
             <div className="flex items-center justify-between pt-2">
               <div>
                 {isEditing && onDelete && (
-                  <button
-                    type="button"
-                    onClick={() => onDelete(account!.id)}
-                    className="text-sm text-red-400 hover:text-red-300 transition-colors"
-                  >
-                    Verwijderen
-                  </button>
+                  confirmingDelete ? (
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-muted-foreground">Zeker weten?</span>
+                      <button
+                        type="button"
+                        onClick={() => setConfirmingDelete(false)}
+                        className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        Nee
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => onDelete(account!.id)}
+                        className="text-xs text-red-400 hover:text-red-300 font-medium transition-colors"
+                      >
+                        Ja, verwijderen
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setConfirmingDelete(true)}
+                      className="text-sm text-red-400 hover:text-red-300 transition-colors"
+                    >
+                      Verwijderen
+                    </button>
+                  )
                 )}
               </div>
               <div className="flex gap-2">

@@ -157,7 +157,8 @@ export interface FinanceTransaction {
   payee: string | null;
   memo: string | null;
   amount: number; // centen; positief = inflow, negatief = outflow
-  isCleared: boolean;
+  isOpeningBalance: boolean;
+  isReconciled: boolean;
   transferAccountId: string | null;
   createdAt: string;
   updatedAt: string;

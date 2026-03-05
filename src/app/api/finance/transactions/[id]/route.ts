@@ -27,7 +27,7 @@ export async function PUT(
         ...(body.payee !== undefined && { payee: body.payee?.trim() || null }),
         ...(body.memo !== undefined && { memo: body.memo?.trim() || null }),
         ...(body.amount !== undefined && { amount: body.amount }),
-        ...(body.isCleared !== undefined && { isCleared: body.isCleared }),
+        ...(body.isReconciled !== undefined && { isReconciled: body.isReconciled }),
         ...(body.transferAccountId !== undefined && { transferAccountId: body.transferAccountId || null }),
       },
       include: {
@@ -70,6 +70,10 @@ export async function DELETE(
       where: { id, userId: session.userId },
     });
     if (!existing) return NextResponse.json({ error: "Niet gevonden" }, { status: 404 });
+
+    if (existing.isReconciled) {
+      return NextResponse.json({ error: "Reconciled transacties kunnen niet worden verwijderd" }, { status: 400 });
+    }
 
     await prisma.financeTransaction.delete({ where: { id } });
 

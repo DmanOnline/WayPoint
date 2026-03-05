@@ -17,9 +17,11 @@ import BudgetHeader, { BudgetFilter } from "@/components/finance/BudgetHeader";
 import BudgetTable from "@/components/finance/BudgetTable";
 import TransactionList from "@/components/finance/TransactionList";
 import AccountModal from "@/components/finance/AccountModal";
+import ReconcileModal from "@/components/finance/ReconcileModal";
 import CategoryModal from "@/components/finance/CategoryModal";
 import CategoryTargetModal from "@/components/finance/CategoryTargetModal";
 import MoveMoneyPopover from "@/components/finance/MoveMoneyPopover";
+import ReflectView from "@/components/finance/ReflectView";
 
 interface BudgetData {
   month: string;
@@ -393,7 +395,6 @@ export default function FinancePage() {
       payee: string;
       memo: string;
       amount: number;
-      isCleared: boolean;
     }) => {
       const res = await fetch("/api/finance/transactions", {
         method: "POST",
@@ -462,18 +463,24 @@ export default function FinancePage() {
     [activeView, fetchTransactions, fetchAccounts, fetchBudget, month]
   );
 
-  const handleToggleCleared = useCallback(
-    async (id: string, isCleared: boolean) => {
-      await fetch(`/api/finance/transactions/${id}`, {
-        method: "PUT",
+  const [reconcileOpen, setReconcileOpen] = useState(false);
+
+  const handleReconcile = useCallback(
+    async (adjustmentAmount?: number) => {
+      const accountId = activeView.startsWith("account:")
+        ? activeView.replace("account:", "")
+        : null;
+      if (!accountId) return;
+
+      await fetch(`/api/finance/accounts/${accountId}/reconcile`, {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ isCleared }),
+        body: JSON.stringify({ adjustmentAmount }),
       });
-      setTransactions((prev) =>
-        prev.map((t) => (t.id === id ? { ...t, isCleared } : t))
-      );
+
+      await Promise.all([fetchTransactions(accountId), fetchAccounts()]);
     },
-    []
+    [activeView, fetchTransactions, fetchAccounts]
   );
 
   // ─── Filter counts ─────────────────────────────────────────────────
@@ -579,7 +586,11 @@ export default function FinancePage() {
           </>
         )}
 
-        {activeView !== "budget" && (
+        {activeView === "reflect" && (
+          <ReflectView />
+        )}
+
+        {activeView !== "budget" && activeView !== "reflect" && (
           <TransactionList
             transactions={transactions}
             accounts={accounts}
@@ -592,7 +603,7 @@ export default function FinancePage() {
             onSaveTransaction={handleSaveTransaction}
             onUpdateTransaction={handleUpdateTransaction}
             onDeleteTransaction={handleDeleteTransaction}
-            onToggleCleared={handleToggleCleared}
+            onReconcile={activeView.startsWith("account:") ? () => setReconcileOpen(true) : undefined}
             onEditAccount={() => {
               const acc = accounts.find((a) => `account:${a.id}` === activeView);
               if (acc) setAccountModal({ open: true, account: acc });
@@ -621,6 +632,22 @@ export default function FinancePage() {
         onSave={handleSaveCategory}
         onDelete={handleDeleteCategory}
       />
+
+      {/* Reconcile modal */}
+      {reconcileOpen && activeView.startsWith("account:") && (() => {
+        const accountId = activeView.replace("account:", "");
+        const account = accounts.find((a) => a.id === accountId);
+        if (!account) return null;
+        return (
+          <ReconcileModal
+            open={reconcileOpen}
+            account={account}
+            currentBalance={account.balance ?? 0}
+            onClose={() => setReconcileOpen(false)}
+            onReconcile={handleReconcile}
+          />
+        );
+      })()}
 
       {/* Move Money popover */}
       {moveMoneyState && (

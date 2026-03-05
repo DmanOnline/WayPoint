@@ -24,7 +24,6 @@ interface TransactionListProps {
     payee: string;
     memo: string;
     amount: number;
-    isCleared: boolean;
   }) => Promise<void>;
   onUpdateTransaction: (
     id: string,
@@ -37,7 +36,7 @@ interface TransactionListProps {
     }
   ) => Promise<void>;
   onDeleteTransaction: (id: string) => Promise<void>;
-  onToggleCleared: (id: string, isCleared: boolean) => Promise<void>;
+  onReconcile?: () => void;
   onEditAccount?: () => void;
   onOpenSidebar?: () => void;
 }
@@ -68,13 +67,14 @@ export default function TransactionList({
   onSaveTransaction,
   onUpdateTransaction,
   onDeleteTransaction,
-  onToggleCleared,
+  onReconcile,
   onEditAccount,
   onOpenSidebar,
 }: TransactionListProps) {
   const [search, setSearch] = useState("");
   const [showSearch, setShowSearch] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [confirmingEditId, setConfirmingEditId] = useState<string | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
@@ -180,6 +180,19 @@ export default function TransactionList({
             >
               {formatCurrency(balance)}
             </span>
+            <div className="flex-1" />
+            {onReconcile && (
+              <button
+                onClick={onReconcile}
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-surface-hover border border-border/50 transition-colors"
+              >
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                </svg>
+                Reconcile
+              </button>
+            )}
           </div>
         </>
       )}
@@ -251,7 +264,7 @@ export default function TransactionList({
 
       {/* ═══ Column Headers ═══ */}
       <div
-        className="grid items-center px-4 md:px-6 py-2 border-b border-border text-[10px] font-bold text-muted-foreground uppercase tracking-[0.08em] bg-background"
+        className="grid items-center px-4 md:px-6 py-2 border-b-2 border-border/60 text-[10px] font-bold text-muted-foreground uppercase tracking-[0.08em] bg-background"
         style={gridStyle}
       >
         {/* Select all */}
@@ -297,11 +310,11 @@ export default function TransactionList({
         <div className="text-right pr-2">Outflow</div>
         <div className="text-right pr-2">Inflow</div>
 
-        {/* Cleared icon */}
+        {/* Reconciled icon */}
         <div className="flex justify-center">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-green-500/50">
-            <circle cx="12" cy="12" r="10" />
-            <path d="M9 12l2 2 4-4" />
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-muted-foreground/40">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
           </svg>
         </div>
       </div>
@@ -350,7 +363,7 @@ export default function TransactionList({
             </p>
           </div>
         ) : (
-          filtered.map((tx) =>
+          filtered.map((tx, index) =>
             editingId === tx.id ? (
               <InlineEditRow
                 key={tx.id}
@@ -368,14 +381,46 @@ export default function TransactionList({
                   setEditingId(null);
                 }}
               />
+            ) : confirmingEditId === tx.id ? (
+              <div
+                key={tx.id}
+                className="flex items-center justify-between px-4 md:px-6 py-2.5 border-b border-amber-500/30 bg-amber-500/8 text-[13px]"
+              >
+                <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="shrink-0">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                    <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                  </svg>
+                  <span className="font-medium">Gereconciled</span>
+                  <span className="text-muted-foreground">— aanpassen kan de balans beïnvloeden.</span>
+                </div>
+                <div className="flex items-center gap-3 shrink-0">
+                  <button
+                    onClick={() => setConfirmingEditId(null)}
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Annuleren
+                  </button>
+                  <button
+                    onClick={() => { setConfirmingEditId(null); setEditingId(tx.id); }}
+                    className="px-3 py-1 bg-amber-500 text-white rounded-md text-xs font-medium hover:bg-amber-400 transition-colors"
+                  >
+                    Toch bewerken
+                  </button>
+                </div>
+              </div>
             ) : (
               <div
                 key={tx.id}
-                className={`relative grid items-center px-4 md:px-6 py-2 border-b border-border/20 hover:bg-surface-hover/40 transition-colors group text-[13px] cursor-pointer ${
-                  selectedIds.has(tx.id) ? "bg-accent/5" : ""
-                }`}
+                className={`relative grid items-center px-4 md:px-6 py-2 border-b border-border/40 transition-colors group text-[13px] ${
+                  index % 2 !== 0 ? "bg-surface/40" : ""
+                } ${
+                  tx.isReconciled
+                    ? "opacity-60 hover:opacity-80 cursor-pointer hover:bg-surface-hover/40"
+                    : "hover:bg-surface-hover/60 cursor-pointer"
+                } ${selectedIds.has(tx.id) ? "bg-accent/5" : ""}`}
                 style={gridStyle}
-                onClick={() => setEditingId(tx.id)}
+                onClick={() => tx.isReconciled ? setConfirmingEditId(tx.id) : setEditingId(tx.id)}
               >
                 {/* Checkbox */}
                 <div
@@ -417,7 +462,9 @@ export default function TransactionList({
 
                 {/* Payee */}
                 <span className="text-foreground truncate pr-2">
-                  {tx.payee || (
+                  {tx.isOpeningBalance ? (
+                    <span className="text-accent/80 font-medium text-xs">Opening Balance</span>
+                  ) : tx.payee || (
                     <span className="text-muted-foreground/30">—</span>
                   )}
                 </span>
@@ -455,25 +502,16 @@ export default function TransactionList({
                   {tx.amount > 0 ? formatCurrency(tx.amount) : ""}
                 </span>
 
-                {/* Cleared */}
-                <div
-                  className="flex justify-center"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <button
-                    onClick={() => onToggleCleared(tx.id, !tx.isCleared)}
-                    className={`w-[18px] h-[18px] rounded-full border-2 flex items-center justify-center transition-all ${
-                      tx.isCleared
-                        ? "border-green-500 bg-green-500"
-                        : "border-muted-foreground/20 hover:border-green-500/50"
-                    }`}
-                  >
-                    {tx.isCleared && (
-                      <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3">
-                        <polyline points="20 6 9 17 4 12" />
-                      </svg>
-                    )}
-                  </button>
+                {/* Reconciled indicator */}
+                <div className="flex justify-center">
+                  {tx.isReconciled ? (
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-green-500">
+                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                    </svg>
+                  ) : (
+                    <div className="w-[14px] h-[14px] rounded-full border border-muted-foreground/15" />
+                  )}
                 </div>
               </div>
             )
@@ -506,7 +544,6 @@ function AddTransactionRow({
     payee: string;
     memo: string;
     amount: number;
-    isCleared: boolean;
   }) => Promise<void>;
   onCancel: () => void;
 }) {
@@ -541,7 +578,6 @@ function AddTransactionRow({
         payee: payee.trim(),
         memo: memo.trim(),
         amount,
-        isCleared: false,
       });
     } catch (err) {
       console.error("Save failed:", err);

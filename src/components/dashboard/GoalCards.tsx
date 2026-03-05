@@ -53,7 +53,7 @@ function daysUntil(dateStr: string | null): string | null {
 export default function GoalCards({ goals, loading }: Props) {
   if (loading) {
     return (
-      <div className="rounded-xl border border-border bg-card p-5 animate-fade-in opacity-0 stagger-5">
+      <div className="rounded-xl border border-border bg-card p-5 animate-fade-in opacity-0 stagger-5 card-gradient">
         <div className="h-4 w-28 bg-border rounded animate-pulse mb-4" />
         <div className="flex gap-3 overflow-hidden">
           {[1, 2, 3].map((i) => (
@@ -66,7 +66,7 @@ export default function GoalCards({ goals, loading }: Props) {
 
   if (!goals || goals.length === 0) {
     return (
-      <div className="rounded-xl border border-border bg-card p-5 animate-fade-in opacity-0 stagger-5">
+      <div className="rounded-xl border border-border bg-card p-5 animate-fade-in opacity-0 stagger-5 card-gradient">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
             Actieve doelen
@@ -83,7 +83,7 @@ export default function GoalCards({ goals, loading }: Props) {
   }
 
   return (
-    <div className="rounded-xl border border-border bg-card p-5 animate-fade-in opacity-0 stagger-5">
+    <div className="rounded-xl border border-border bg-card p-5 animate-fade-in opacity-0 stagger-5 card-gradient">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
           Actieve doelen

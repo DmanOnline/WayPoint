@@ -125,7 +125,7 @@ export default function BudgetTable({
   return (
     <div className="flex-1 overflow-y-auto">
       {/* Column headers — YNAB style */}
-      <div className="grid grid-cols-[1fr_110px_110px_140px] md:grid-cols-[1fr_140px_140px_170px] items-center px-4 md:px-6 py-2.5 border-b border-border text-[11px] font-bold text-muted-foreground uppercase tracking-[0.08em] sticky top-0 bg-background z-10">
+      <div className="grid grid-cols-[1fr_110px_110px_140px] md:grid-cols-[1fr_140px_140px_170px] items-center px-4 md:px-6 py-2.5 border-b-2 border-border/60 text-[11px] font-bold text-muted-foreground uppercase tracking-[0.08em] sticky top-0 bg-background z-10">
         <div className="pl-7">Category</div>
         <div className="text-right pr-2">Assigned</div>
         <div className="text-right pr-2">Activity</div>

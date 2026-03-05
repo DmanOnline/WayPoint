@@ -20,7 +20,7 @@ function getInitials(name: string): string {
 export default function PeoplePulse({ people, loading }: Props) {
   if (loading) {
     return (
-      <div className="rounded-xl border border-border bg-card p-5 animate-fade-in opacity-0 stagger-4">
+      <div className="rounded-xl border border-border bg-card p-5 animate-fade-in opacity-0 stagger-4 card-gradient">
         <div className="h-4 w-20 bg-border rounded animate-pulse mb-4" />
         <div className="space-y-3">
           {[1, 2].map((i) => (
@@ -43,7 +43,7 @@ export default function PeoplePulse({ people, loading }: Props) {
   const isEmpty = needs.length === 0 && bdays.length === 0 && followUps === 0;
 
   return (
-    <div className="rounded-xl border border-border bg-card p-5 animate-fade-in opacity-0 stagger-4">
+    <div className="rounded-xl border border-border bg-card p-5 animate-fade-in opacity-0 stagger-4 card-gradient">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">

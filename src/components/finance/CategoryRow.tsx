@@ -124,35 +124,36 @@ export default function CategoryRow({
   const targetMet = hasTarget && budget.target!.needed === 0;
 
   // ─── Progress bar ───────────────────────────────────────────────────
-  // Bar toont spending vs assigned (niet vs target)
-  // - Funded + spending: gestreept groen (spent) + solid blauw/groen (remaining)
-  // - Overspent: groen (assigned deel) + rood gestreept (overspent deel)
-  // - Underfunded: amber (progress naar target)
+  // Altijd zichtbaar als er assigned > 0 is.
+  // - Funded / no target: gestreept groen (spent) + solid groen (remaining)
+  // - Overspent: groen (assigned) + rood gestreept (overspent)
+  // - Underfunded target: amber (progress naar target)
   const progressBar = (() => {
-    if (!budget.target) return null;
-    const t = budget.target;
     const assigned = budget.assigned;
-    const isOverspent = budget.available < 0;
     const absActivity = Math.abs(budget.activity);
+    const isOverspent = budget.available < 0;
 
-    if (isOverspent && assigned > 0) {
-      // Overspent: bar = assigned + overspent amount
+    if (assigned === 0 && !isOverspent) return { type: "empty" as const };
+
+    if (isOverspent) {
       const overspentAmount = Math.abs(budget.available);
-      const total = assigned + overspentAmount;
-      const greenPct = Math.round((assigned / total) * 100);
+      const total = (assigned > 0 ? assigned : 0) + overspentAmount;
+      const greenPct = assigned > 0 ? Math.round((assigned / total) * 100) : 0;
       const redPct = 100 - greenPct;
       return { type: "overspent" as const, greenPct, redPct };
     }
-    if (t.progress >= 1 && assigned > 0) {
-      // Funded: bar = full, split into spent + remaining
-      const spentPct = budget.activity < 0
-        ? Math.min(100, Math.round((absActivity / assigned) * 100))
-        : 0;
-      const remainingPct = 100 - spentPct;
-      return { type: "funded" as const, spentPct, remainingPct };
+
+    // Underfunded target
+    if (budget.target && budget.target.needed > 0) {
+      return { type: "underfunded" as const, amberPct: Math.round(budget.target.progress * 100) };
     }
-    // Underfunded: amber bar showing progress
-    return { type: "underfunded" as const, amberPct: Math.round(t.progress * 100) };
+
+    // Funded of no target — toon spending vs assigned
+    const spentPct = budget.activity < 0
+      ? Math.min(100, Math.round((absActivity / assigned) * 100))
+      : 0;
+    const remainingPct = 100 - spentPct;
+    return { type: "funded" as const, spentPct, remainingPct };
   })();
 
   // ─── Pill classes ───────────────────────────────────────────────────
@@ -183,7 +184,7 @@ export default function CategoryRow({
   })();
 
   return (
-    <div className="grid grid-cols-[1fr_110px_110px_140px] md:grid-cols-[1fr_140px_140px_170px] items-center px-4 md:px-6 py-2.5 border-b border-border/20 hover:bg-surface-hover/40 transition-colors group">
+    <div className="grid grid-cols-[1fr_110px_110px_140px] md:grid-cols-[1fr_140px_140px_170px] items-center px-4 md:px-6 py-3 border-b border-border/40 hover:bg-surface-hover/50 transition-colors group">
       {/* Category name + progress bar + status */}
       <div className="relative flex items-center gap-2.5 pl-5 md:pl-7 min-w-0">
         <div className="flex flex-col min-w-0 flex-1 gap-1">
@@ -191,10 +192,10 @@ export default function CategoryRow({
           <div className="flex items-center gap-2.5 min-w-0">
             <span className="text-foreground text-[14px] font-medium truncate">{category.name}</span>
             {label && (
-              <span className={`text-[11px] font-semibold shrink-0 hidden md:inline ${labelColor}`}>
+              <span className={`text-[12px] font-medium shrink-0 hidden md:inline ${labelColor}`}>
                 {label}
                 {sublabel && (
-                  <span className="font-normal ml-1 opacity-80">{sublabel}</span>
+                  <span className="font-normal ml-1 opacity-70">{sublabel}</span>
                 )}
               </span>
             )}
@@ -202,7 +203,7 @@ export default function CategoryRow({
 
           {/* Progress bar */}
           {progressBar && (
-            <div className="flex items-center h-[6px] w-full max-w-[220px] rounded-full overflow-hidden bg-border/25">
+            <div className="flex items-center h-[5px] w-full rounded-sm overflow-hidden bg-gray-300 dark:bg-gray-600">
               {progressBar.type === "funded" && (
                 <>
                   {/* Spent portion — green with diagonal stripes */}
@@ -314,7 +315,7 @@ export default function CategoryRow({
             className="w-full text-right text-[14px] tabular-nums text-foreground hover:text-accent transition-colors cursor-text px-2 py-1 rounded hover:bg-surface-hover inline-flex items-center justify-end gap-1.5"
           >
             {budget.assigned === 0 ? (
-              <span className="text-muted-foreground/30">&mdash;</span>
+              <span className="text-muted-foreground/40">{formatCurrency(0)}</span>
             ) : (
               <>
                 {formatCurrency(budget.assigned)}
@@ -331,14 +332,14 @@ export default function CategoryRow({
       </div>
 
       {/* Activity */}
-      <div className={`text-right tabular-nums text-[14px] pr-2 ${budget.activity < 0 ? "text-foreground" : budget.activity > 0 ? "text-green-600 dark:text-green-400" : "text-muted-foreground/30"}`}>
-        {budget.activity === 0 ? "\u2014" : formatCurrency(budget.activity)}
+      <div className={`text-right tabular-nums text-[14px] pr-2 ${budget.activity < 0 ? "text-foreground" : budget.activity > 0 ? "text-green-600 dark:text-green-400" : "text-muted-foreground/40"}`}>
+        {formatCurrency(budget.activity)}
       </div>
 
       {/* Available — pill (clickable voor move money) */}
       <div className="text-right pr-3 flex justify-end">
         {status === "empty" ? (
-          <span className="text-[14px] text-muted-foreground/25 tabular-nums">&mdash;</span>
+          <span className="text-[14px] text-muted-foreground/40 tabular-nums">{formatCurrency(0)}</span>
         ) : budget.available !== 0 ? (
           <button
             onClick={(e) => {
@@ -368,7 +369,13 @@ export default function CategoryRow({
             {formatCurrency(budget.available)}
           </button>
         ) : (
-          <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[13px] font-bold tabular-nums ${pillClasses}`}>
+          <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[13px] font-semibold tabular-nums ${pillClasses}`}>
+            {(status === "spent" || status === "funded") && (
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="shrink-0">
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="9 12 11 14 15 10" />
+              </svg>
+            )}
             {formatCurrency(budget.available)}
           </span>
         )}

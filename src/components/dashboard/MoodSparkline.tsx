@@ -23,7 +23,7 @@ function getDayLabel(dateStr: string): string {
 export default function MoodSparkline({ journal, loading }: Props) {
   if (loading) {
     return (
-      <div className="rounded-xl border border-border bg-card p-5 animate-fade-in opacity-0 stagger-4">
+      <div className="rounded-xl border border-border bg-card p-5 animate-fade-in opacity-0 stagger-4 card-gradient">
         <div className="h-4 w-36 bg-border rounded animate-pulse mb-4" />
         <div className="flex gap-3 items-end">
           {[1, 2, 3, 4, 5, 6, 7].map((i) => (
@@ -42,7 +42,7 @@ export default function MoodSparkline({ journal, loading }: Props) {
   const isToday = (d: string) => d === today;
 
   return (
-    <div className="rounded-xl border border-border bg-card p-5 animate-fade-in opacity-0 stagger-4">
+    <div className="rounded-xl border border-border bg-card p-5 animate-fade-in opacity-0 stagger-4 card-gradient">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
           <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">

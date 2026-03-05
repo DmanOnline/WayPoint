@@ -45,7 +45,7 @@ export default function CategoryGroupRow({
     <div>
       {/* Group header — YNAB style: slightly tinted bg, bold name */}
       <div
-        className="grid grid-cols-[1fr_110px_110px_140px] md:grid-cols-[1fr_140px_140px_170px] items-center px-4 md:px-6 py-2.5 bg-surface/60 border-b border-border cursor-pointer hover:bg-surface transition-colors group"
+        className="grid grid-cols-[1fr_110px_110px_140px] md:grid-cols-[1fr_140px_140px_170px] items-center px-4 md:px-6 py-2 bg-surface border-t-2 border-t-border/40 border-b border-b-border/50 cursor-pointer hover:bg-surface-hover transition-colors group mt-1"
         onClick={() => setExpanded(!expanded)}
       >
         <div className="flex items-center gap-1.5 min-w-0">

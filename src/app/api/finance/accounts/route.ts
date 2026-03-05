@@ -33,13 +33,13 @@ export async function GET(request: NextRequest) {
       orderBy: [{ group: "asc" }, { sortOrder: "asc" }, { name: "asc" }],
     });
 
-    // Bereken balans per account: startBalance + som transacties
+    // Bereken balans per account: som van alle transacties (incl. opening balance)
     const parsed = accounts.map((a) => {
       const txSum = a.transactions.reduce((sum, t) => sum + t.amount, 0);
       const { transactions: _, ...rest } = a;
       return {
         ...parseAccount(rest),
-        balance: a.startBalance + txSum,
+        balance: txSum,
       };
     });
 
@@ -76,15 +76,31 @@ export async function POST(request: NextRequest) {
         type: type || "checking",
         group: group || "cash",
         onBudget,
-        startBalance: startBalance || 0,
+        startBalance: 0,
         currency: currency || "EUR",
         color: color || "#6366f1",
         sortOrder: (maxSort._max.sortOrder ?? 0) + 1,
       },
     });
 
+    // Maak opening balance transactie als er een startsaldo is
+    const initialBalance = startBalance || 0;
+    if (initialBalance !== 0) {
+      await prisma.financeTransaction.create({
+        data: {
+          userId: session.userId,
+          accountId: account.id,
+          date: account.createdAt,
+          amount: initialBalance,
+          isOpeningBalance: true,
+          isCleared: true,
+          payee: "Opening Balance",
+        },
+      });
+    }
+
     return NextResponse.json(
-      { account: { ...parseAccount(account), balance: account.startBalance } },
+      { account: { ...parseAccount(account), balance: initialBalance } },
       { status: 201 }
     );
   } catch (err) {

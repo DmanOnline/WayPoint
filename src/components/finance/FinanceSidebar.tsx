@@ -93,6 +93,23 @@ export default function FinanceSidebar({
             </svg>
             Alle transacties
           </button>
+
+          <button
+            onClick={() => handleSelect("reflect")}
+            className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-medium transition-all ${
+              activeView === "reflect"
+                ? "bg-[#2D3A7A] text-white"
+                : "text-[#B8BFE0] hover:bg-[#232E65] hover:text-white"
+            }`}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+              <line x1="18" y1="20" x2="18" y2="10" />
+              <line x1="12" y1="20" x2="12" y2="4" />
+              <line x1="6" y1="20" x2="6" y2="14" />
+            </svg>
+            Reflect
+          </button>
+
         </div>
 
         <div className="mx-3 my-2 border-t border-[#2A3164]" />

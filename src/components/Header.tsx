@@ -93,7 +93,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
   const initial = displayName.charAt(0).toUpperCase();
 
   return (
-    <header className="relative z-40 h-16 flex items-center justify-between px-4 md:px-8 border-b border-border bg-header-bg backdrop-blur-sm transition-colors duration-300">
+    <header className="relative z-40 h-16 flex items-center justify-between px-4 md:px-8 border-b border-border bg-header-bg backdrop-blur-md transition-colors duration-300">
       <div className="flex items-center gap-3">
         {/* Hamburger menu - mobile only */}
         <button
@@ -115,7 +115,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
       <div className="flex items-center gap-2 md:gap-4">
         <div className="text-right hidden sm:block">
           <p className="text-sm text-muted-foreground">{date}</p>
-          <p className="text-xs text-muted font-mono">{time}</p>
+          <p className="text-xs text-muted font-mono tabular-nums">{time}</p>
         </div>
         <ThemeToggle />
 
@@ -123,7 +123,8 @@ export default function Header({ onMenuClick }: HeaderProps) {
         <div className="relative" ref={menuRef}>
           <button
             onClick={() => setShowMenu(!showMenu)}
-            className="w-8 h-8 rounded-full bg-accent flex items-center justify-center text-xs font-bold text-white hover:brightness-110 active:scale-95 transition-all duration-150"
+            className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white hover:brightness-110 active:scale-95 transition-all duration-150"
+            style={{ background: "var(--gradient-accent)" }}
           >
             {initial}
           </button>

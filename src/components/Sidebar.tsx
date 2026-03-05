@@ -160,7 +160,7 @@ export default function Sidebar({ mobileOpen = false, onMobileClose }: SidebarPr
       {/* Mobile backdrop */}
       {mobileOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/50 md:hidden animate-backdrop"
+          className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm md:hidden animate-backdrop"
           onClick={onMobileClose}
         />
       )}
@@ -174,7 +174,10 @@ export default function Sidebar({ mobileOpen = false, onMobileClose }: SidebarPr
       >
         {/* Logo */}
         <div className="flex items-center gap-3 px-5 h-16 border-b border-border">
-          <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center flex-shrink-0">
+          <div
+            className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 glow-accent"
+            style={{ background: "var(--gradient-accent)" }}
+          >
             <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z" />
             </svg>
@@ -201,8 +204,8 @@ export default function Sidebar({ mobileOpen = false, onMobileClose }: SidebarPr
               background: "var(--accent-glow)",
               backdropFilter: "blur(12px) saturate(1.8)",
               WebkitBackdropFilter: "blur(12px) saturate(1.8)",
-              border: "1px solid rgba(108, 99, 255, 0.15)",
-              boxShadow: "0 0 20px var(--accent-glow), inset 0 1px 0 rgba(255, 255, 255, 0.1), inset 0 -1px 0 rgba(0, 0, 0, 0.05)",
+              border: "1px solid rgba(108, 99, 255, 0.12)",
+              boxShadow: "0 0 24px var(--accent-glow), inset 0 1px 0 rgba(255, 255, 255, 0.06), inset 0 -1px 0 rgba(0, 0, 0, 0.05)",
             }}
           />
 

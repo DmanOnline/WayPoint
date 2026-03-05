@@ -175,14 +175,11 @@ export async function GET(request: NextRequest) {
     const budgetAccountIds = (
       await prisma.financeAccount.findMany({
         where: { userId: session.userId, onBudget: true },
-        select: { id: true, startBalance: true },
+        select: { id: true },
       })
     );
 
-    // Totaal startbalans van alle budget accounts
-    const totalStartBalance = budgetAccountIds.reduce((s, a) => s + a.startBalance, 0);
-
-    // Totaal alle transacties op budget accounts t/m deze maand
+    // Totaal alle transacties op budget accounts t/m deze maand (incl. opening balance)
     const budgetAccountTxSum = await prisma.financeTransaction.aggregate({
       where: {
         userId: session.userId,
@@ -192,8 +189,8 @@ export async function GET(request: NextRequest) {
       _sum: { amount: true },
     });
 
-    // Totaal budget account balans
-    const totalBudgetBalance = totalStartBalance + (budgetAccountTxSum._sum.amount || 0);
+    // Totaal budget account balans = som van alle transacties
+    const totalBudgetBalance = budgetAccountTxSum._sum.amount || 0;
 
     // Totaal available across all categories
     const totalAvailable = allCategoryIds.reduce((sum, catId) => {

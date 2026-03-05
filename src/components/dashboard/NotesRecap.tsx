@@ -11,7 +11,7 @@ interface Props {
 export default function NotesRecap({ notes, loading }: Props) {
   if (loading) {
     return (
-      <div className="rounded-xl border border-border bg-card p-5 animate-fade-in opacity-0 stagger-6">
+      <div className="rounded-xl border border-border bg-card p-5 animate-fade-in opacity-0 stagger-6 card-gradient">
         <div className="h-4 w-20 bg-border rounded animate-pulse mb-3" />
         <div className="h-3 w-48 bg-border rounded animate-pulse" />
       </div>
@@ -19,7 +19,7 @@ export default function NotesRecap({ notes, loading }: Props) {
   }
 
   return (
-    <div className="rounded-xl border border-border bg-card p-5 animate-fade-in opacity-0 stagger-6">
+    <div className="rounded-xl border border-border bg-card p-5 animate-fade-in opacity-0 stagger-6 card-gradient">
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
           Notes

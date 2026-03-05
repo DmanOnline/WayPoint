@@ -62,7 +62,7 @@ function buildItems(
 export default function TodayAgenda({ events, tasks, tomorrow, tomorrowAgenda, loading }: Props) {
   if (loading) {
     return (
-      <div className="rounded-xl border border-border bg-card p-5 animate-fade-in opacity-0 stagger-3">
+      <div className="rounded-xl border border-border bg-card p-5 animate-fade-in opacity-0 stagger-3 card-gradient">
         <div className="h-4 w-32 bg-border rounded animate-pulse mb-4" />
         <div className="space-y-3">
           {[1, 2, 3].map((i) => (
@@ -114,7 +114,7 @@ export default function TodayAgenda({ events, tasks, tomorrow, tomorrowAgenda, l
     : "Vandaag";
 
   return (
-    <div className="rounded-xl border border-border bg-card p-5 animate-fade-in opacity-0 stagger-3">
+    <div className="rounded-xl border border-border bg-card p-5 animate-fade-in opacity-0 stagger-3 card-gradient">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">

@@ -572,6 +572,8 @@ model FinanceTransaction {
   isCleared  Boolean          @default(false)
 
   transferAccountId String?   // andere kant van een transfer
+  isOpeningBalance  Boolean  @default(false) // startsaldo transactie
+  isReconciled      Boolean  @default(false) // afgesloten na reconciliation
 
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
