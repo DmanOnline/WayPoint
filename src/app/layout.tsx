@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { Outfit, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import ThemeProvider from "@/components/ThemeProvider";
+import PrefetchRoutes from "@/components/PrefetchRoutes";
 
 const outfit = Outfit({
   variable: "--font-outfit",
@@ -18,6 +19,14 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Waypoint",
   description: "Your personal life operating system",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Waypoint",
+  },
+  icons: {
+    apple: "/icons/apple-touch-icon.png",
+  },
 };
 
 export const viewport: Viewport = {
@@ -25,6 +34,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   viewportFit: "cover",
+  themeColor: "#0A0B0F",
 };
 
 export default async function RootLayout({
@@ -62,6 +72,7 @@ export default async function RootLayout({
       >
         <ThemeProvider defaultTheme={defaultTheme}>
           {children}
+          <PrefetchRoutes />
         </ThemeProvider>
       </body>
     </html>

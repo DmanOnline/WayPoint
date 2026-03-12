@@ -3,7 +3,7 @@ import { jwtVerify } from "jose";
 
 const secret = new TextEncoder().encode(process.env.AUTH_SECRET);
 
-const publicPaths = ["/login", "/api/auth/login"];
+const publicPaths = ["/login", "/api/auth/login", "/offline"];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
